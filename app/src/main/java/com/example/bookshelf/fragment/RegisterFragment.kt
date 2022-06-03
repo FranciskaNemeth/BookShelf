@@ -5,29 +5,25 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.Toast
+import androidx.navigation.Navigation
 import com.example.bookshelf.R
+import com.example.bookshelf.utils.Utils
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [RegisterFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class RegisterFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var auth : FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+
+        // Initialize Firebase Auth
+        auth = Firebase.auth
     }
 
     override fun onCreateView(
@@ -35,26 +31,50 @@ class RegisterFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.register_screen, container, false)
-    }
+        val view = inflater.inflate(R.layout.register_screen, container, false)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment RegisterFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            RegisterFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        val emailEditText : TextInputEditText = view.findViewById(R.id.textInputEditTextEmail)
+        val pwdEditText : TextInputEditText = view.findViewById(R.id.textInputEditTextPassword)
+        val userNameEditText : TextInputEditText = view.findViewById(R.id.textInputEditTextUserName)
+
+        val buttonRegister : Button = view.findViewById(R.id.buttonRegister)
+
+        buttonRegister.setOnClickListener {
+            if (emailEditText.text.isNullOrBlank() || emailEditText.text.isNullOrEmpty() ||
+                pwdEditText.text.isNullOrBlank() || pwdEditText.text.isNullOrEmpty() ||
+                userNameEditText.text.isNullOrBlank() || userNameEditText.text.isNullOrEmpty())
+            {
+                Toast.makeText(requireActivity(), "Empty user name, e-mail or password field!",
+                    Toast.LENGTH_LONG).show()
+            }
+            else {
+                if (Utils.isValidEmail(emailEditText.text.toString())) {
+                    register(emailEditText.text.toString(), pwdEditText.text.toString())
+                }
+                else {
+                    Toast.makeText(requireActivity(), "Incorrect e-mail or password!",
+                        Toast.LENGTH_LONG).show()
                 }
             }
+        }
+
+        return view
+    }
+
+    fun register(email: String, password: String) {
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener(OnCompleteListener {
+                if (it.isSuccessful) {
+                    Toast.makeText(
+                        requireActivity(), "Successfully Singed Up!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        requireActivity(), "Singed Up Failed!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            })
     }
 }
