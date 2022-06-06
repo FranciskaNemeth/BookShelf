@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.Navigation
 import com.example.bookshelf.R
+import com.example.bookshelf.utils.Utils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -42,5 +43,13 @@ class SplashFragment : Fragment() {
         else {
             Navigation.findNavController(view).navigate(R.id.action_splashFragment_to_loginFragment)
         }
+    }
+
+    override fun onResume() {
+        if( !Utils.isNetworkAvailable(requireContext()) ) {
+            AlertDialogFragment().errorHandling(requireContext())
+        }
+
+        super.onResume()
     }
 }

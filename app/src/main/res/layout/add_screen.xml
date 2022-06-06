@@ -88,12 +88,12 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayoutDescription"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/global_margin24"
+            android:layout_marginStart="@dimen/global_margin24"
             android:layout_marginTop="@dimen/global_margin24"
             app:layout_constraintBottom_toTopOf="@id/buttonSave"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/imageButtonDesc"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/spinner">
 
@@ -126,8 +126,24 @@
             android:background="@android:color/transparent"
             app:layout_constraintBottom_toBottomOf="@+id/imageView"
             app:layout_constraintStart_toEndOf="@+id/imageView"
-            app:srcCompat="@android:drawable/ic_menu_edit"
+            app:srcCompat="@drawable/ic_baseline_photo_camera_24"
             app:tint="@color/colorSecondaryVariant"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/imageButtonDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/buttonBetween8"
+            android:layout_marginTop="@dimen/global_margin24"
+            android:layout_marginEnd="@dimen/global_margin24"
+            android:layout_marginBottom="@dimen/global_margin24"
+            app:layout_constraintBottom_toTopOf="@+id/buttonSave"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:background="@android:color/transparent"
+            app:layout_constraintStart_toEndOf="@+id/textInputLayoutDescription"
+            app:layout_constraintTop_toBottomOf="@+id/spinner"
+            app:srcCompat="@drawable/ic_baseline_photo_camera_24"
             tools:ignore="ContentDescription" />
 
 

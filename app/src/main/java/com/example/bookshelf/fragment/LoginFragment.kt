@@ -72,6 +72,14 @@ class LoginFragment : Fragment() {
         return view
     }
 
+    override fun onResume() {
+        if( !Utils.isNetworkAvailable(requireContext()) ) {
+            AlertDialogFragment().errorHandling(requireContext())
+        }
+
+        super.onResume()
+    }
+
     fun login(email : String, password : String) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(requireActivity()) { task ->

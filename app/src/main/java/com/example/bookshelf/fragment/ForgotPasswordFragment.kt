@@ -53,8 +53,14 @@ class ForgotPasswordFragment : Fragment() {
         }
 
         return view
+    }
 
+    override fun onResume() {
+        if( !Utils.isNetworkAvailable(requireContext()) ) {
+            AlertDialogFragment().errorHandling(requireContext())
+        }
 
+        super.onResume()
     }
 
     fun forgotPassword(email : String) {

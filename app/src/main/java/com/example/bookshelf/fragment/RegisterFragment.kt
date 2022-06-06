@@ -61,6 +61,14 @@ class RegisterFragment : Fragment() {
         return view
     }
 
+    override fun onResume() {
+        if( !Utils.isNetworkAvailable(requireContext()) ) {
+            AlertDialogFragment().errorHandling(requireContext())
+        }
+
+        super.onResume()
+    }
+
     fun register(email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(OnCompleteListener {

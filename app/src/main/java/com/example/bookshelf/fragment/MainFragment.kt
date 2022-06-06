@@ -3,6 +3,7 @@ package com.example.bookshelf.fragment
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.*
+import android.widget.Button
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
@@ -13,6 +14,8 @@ import com.example.bookshelf.R
 import com.example.bookshelf.adapter.BooksRecyclerViewAdapter
 import com.example.bookshelf.database.DatabaseManager
 import com.example.bookshelf.model.Book
+import com.example.bookshelf.utils.Utils
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -54,6 +57,11 @@ class MainFragment : Fragment() {
         setHasOptionsMenu(true)
         requireActivity().invalidateOptionsMenu()
 
+        val addButton : FloatingActionButton = view.findViewById(R.id.floatingActionButton)
+        addButton.setOnClickListener {
+            Navigation.findNavController(view).navigate(R.id.action_mainFragment_to_addFragment)
+        }
+
         return view
     }
 
@@ -78,5 +86,13 @@ class MainFragment : Fragment() {
 
         }
 
+    }
+
+    override fun onResume() {
+        if( !Utils.isNetworkAvailable(requireContext()) ) {
+            AlertDialogFragment().errorHandling(requireContext())
+        }
+
+        super.onResume()
     }
 }
