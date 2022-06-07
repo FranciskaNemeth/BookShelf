@@ -24,5 +24,10 @@ class User(userName: String, emailAddress: String) {
             }
         }
 
-
+    fun userToHashMapOf() : HashMap<String, Any?> {
+        return hashMapOf(
+            "userName" to this.userName,
+            "emailAddress" to this.emailAddress
+        )
+    }
 }

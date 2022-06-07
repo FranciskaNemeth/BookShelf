@@ -9,10 +9,15 @@ import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.util.*
 
 
 object Utils {
     const val PERMISSION_REQUEST_CODE = 200
+
+    fun generateRandUUID() : String {
+        return UUID.randomUUID().toString()
+    }
 
     fun isValidEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()

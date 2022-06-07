@@ -47,7 +47,8 @@ class SplashFragment : Fragment() {
 
     override fun onResume() {
         if( !Utils.isNetworkAvailable(requireContext()) ) {
-            AlertDialogFragment().errorHandling(requireContext())
+            val message = "Something went wrong! Please check your internet connection or try again later!"
+            AlertDialogFragment().errorHandling(message,requireContext())
         }
 
         super.onResume()

@@ -9,6 +9,8 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.navigation.Navigation
 import com.example.bookshelf.R
+import com.example.bookshelf.database.DatabaseManager
+import com.example.bookshelf.model.User
 import com.example.bookshelf.utils.Utils
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.textfield.TextInputEditText
@@ -49,7 +51,9 @@ class RegisterFragment : Fragment() {
             }
             else {
                 if (Utils.isValidEmail(emailEditText.text.toString())) {
-                    register(emailEditText.text.toString(), pwdEditText.text.toString())
+                    register(userNameEditText.text.toString(),
+                        emailEditText.text.toString(),
+                        pwdEditText.text.toString())
                 }
                 else {
                     Toast.makeText(requireActivity(), "Incorrect e-mail or password!",
@@ -63,16 +67,18 @@ class RegisterFragment : Fragment() {
 
     override fun onResume() {
         if( !Utils.isNetworkAvailable(requireContext()) ) {
-            AlertDialogFragment().errorHandling(requireContext())
+            val message = "Something went wrong! Please check your internet connection or try again later!"
+            AlertDialogFragment().errorHandling(message,requireContext())
         }
 
         super.onResume()
     }
 
-    fun register(email: String, password: String) {
+    fun register(username: String, email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(OnCompleteListener {
                 if (it.isSuccessful) {
+                    DatabaseManager.setUserdata(User(username, email))
                     Toast.makeText(
                         requireActivity(), "Successfully Singed Up!",
                         Toast.LENGTH_LONG

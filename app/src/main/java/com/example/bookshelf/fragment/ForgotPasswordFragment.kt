@@ -57,7 +57,8 @@ class ForgotPasswordFragment : Fragment() {
 
     override fun onResume() {
         if( !Utils.isNetworkAvailable(requireContext()) ) {
-            AlertDialogFragment().errorHandling(requireContext())
+            val message = "Something went wrong! Please check your internet connection or try again later!"
+            AlertDialogFragment().errorHandling(message,requireContext())
         }
 
         super.onResume()
@@ -66,9 +67,9 @@ class ForgotPasswordFragment : Fragment() {
     fun forgotPassword(email : String) {
         auth.sendPasswordResetEmail(email).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                Toast.makeText(requireActivity(), "Ellenőrizze az e-mailjeit!", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireActivity(), "Check your e-mails!", Toast.LENGTH_LONG).show()
             } else {
-                Toast.makeText(requireActivity(), "Próbálja meg újra!", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireActivity(), "Try again!", Toast.LENGTH_LONG).show()
             }
         }
     }

@@ -12,6 +12,7 @@ import androidx.navigation.Navigation
 import com.example.bookshelf.MainActivity
 import com.example.bookshelf.R
 import com.example.bookshelf.database.DatabaseManager
+import com.example.bookshelf.interfaces.GetUserInterface
 import com.example.bookshelf.utils.Utils
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.FirebaseApp
@@ -74,7 +75,8 @@ class LoginFragment : Fragment() {
 
     override fun onResume() {
         if( !Utils.isNetworkAvailable(requireContext()) ) {
-            AlertDialogFragment().errorHandling(requireContext())
+            val message = "Something went wrong! Please check your internet connection or try again later!"
+            AlertDialogFragment().errorHandling(message,requireContext())
         }
 
         super.onResume()

@@ -17,4 +17,10 @@
     <string name="genre">Genre</string>
     <string name="description">Description</string>
     <string name="save">Save</string>
+
+    <string-array name="Genres">
+        <item>Romance</item>
+        <item>Thriller</item>
+        <item>Fantasy</item>
+    </string-array>
 </resources>

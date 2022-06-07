@@ -8,10 +8,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.startActivity
 
 class AlertDialogFragment {
-    fun errorHandling(paramContext : Context) {
+    fun errorHandling(message: String, paramContext : Context) {
         val alertDialog = AlertDialog.Builder(paramContext)
         alertDialog.setTitle("Ooops!")
-        alertDialog.setMessage("Something went wrong! Please check your internet connection or try again later!")
+        alertDialog.setMessage(message)
         alertDialog.setCancelable(false)
         alertDialog.setPositiveButton("Ok",
             DialogInterface.OnClickListener { dialog, which ->
@@ -20,6 +20,19 @@ class AlertDialogFragment {
                 a.addCategory(Intent.CATEGORY_HOME)
                 a.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 startActivity(paramContext, a, Bundle())
+            })
+        alertDialog.create()
+        alertDialog.show()
+    }
+
+    fun addBookErrorHandling(message: String, paramContext: Context) {
+        val alertDialog = AlertDialog.Builder(paramContext)
+        alertDialog.setTitle("Ooops!")
+        alertDialog.setMessage(message)
+        alertDialog.setCancelable(false)
+        alertDialog.setPositiveButton("Ok",
+            DialogInterface.OnClickListener { dialog, which ->
+                dialog.dismiss()
             })
         alertDialog.create()
         alertDialog.show()
