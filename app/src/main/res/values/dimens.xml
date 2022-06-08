@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="global_margin24">24dp</dimen>
+    <dimen name="global_margin64">64dp</dimen>
+    <dimen name="buttonMargin64">64dp</dimen>
+    <dimen name="buttonBetween8">8dp</dimen>
+    <dimen name="buttonBetween16">16dp</dimen>
+    <dimen name="buttonBetween64">64dp</dimen>
+    <dimen name="imgMargin16">16dp</dimen>
+    <dimen name="imgMargin64">64dp</dimen>
+    <dimen name="progressBar">64dp</dimen>
+    <dimen name="margin32">32dp</dimen>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+</resources>
