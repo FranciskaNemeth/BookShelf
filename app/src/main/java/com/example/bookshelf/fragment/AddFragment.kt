@@ -9,7 +9,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -114,8 +113,11 @@ class AddFragment : Fragment() {
                             .load(imageurl)
                             .into(imageView)
                     }
-                    textInputEditTextTitle.setText(book.title)
-                    textInputEditTextAuthor.setText(book.author)
+                    val title = Utils.capitalizeFirstLetters(book.title)
+                    val author = Utils.capitalizeFirstLetters(book.author)
+
+                    textInputEditTextTitle.setText(title)
+                    textInputEditTextAuthor.setText(author)
                     textInputEditTextDescription.setText(book.description)
 
                     spinner.post(Runnable {
@@ -320,8 +322,11 @@ class AddFragment : Fragment() {
                             it.boundingBox?.width()?.times(it.boundingBox?.height()!!)
                         }
 
-                        textInputEditTextTitle.setText(sortedTextBlocks[0].text)
-                        textInputEditTextAuthor.setText(sortedTextBlocks[1].text)
+                        val title = Utils.capitalizeFirstLetters(sortedTextBlocks[0].text)
+                        val author = Utils.capitalizeFirstLetters(sortedTextBlocks[1].text)
+
+                        textInputEditTextTitle.setText(title)
+                        textInputEditTextAuthor.setText(author)
                     }
                     else {
                         Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
