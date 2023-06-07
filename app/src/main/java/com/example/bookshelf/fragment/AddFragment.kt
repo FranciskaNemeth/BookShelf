@@ -68,7 +68,6 @@ class AddFragment : Fragment() {
     var baos = ByteArrayOutputStream()
 
     val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-    private var imageUri: Uri? = null
     val storage = Firebase.storage
     var imgURL : String? = null
 
@@ -353,7 +352,7 @@ class AddFragment : Fragment() {
                 Glide.with(requireActivity())
                     .load(imageurl)
                     .placeholder(R.drawable.logo)
-                    .into(imageView)
+                    .into(img)
             }
         }
 
