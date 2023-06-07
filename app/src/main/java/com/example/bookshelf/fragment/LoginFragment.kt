@@ -1,6 +1,5 @@
 package com.example.bookshelf.fragment
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,14 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.navigation.Navigation
-import com.example.bookshelf.MainActivity
 import com.example.bookshelf.R
 import com.example.bookshelf.database.DatabaseManager
-import com.example.bookshelf.interfaces.GetUserInterface
 import com.example.bookshelf.utils.Utils
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -28,6 +25,13 @@ class LoginFragment : Fragment() {
 
         // Initialize Firebase Auth
         auth = Firebase.auth
+
+        activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // in here you can do logic when backPress is clicked
+                activity!!.finish()
+            }
+        })
     }
 
     override fun onCreateView(
