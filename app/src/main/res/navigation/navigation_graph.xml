@@ -71,4 +71,9 @@
         android:id="@+id/boundingBoxFragment"
         android:name="com.example.bookshelf.fragment.BoundingBoxFragment"
         tools:layout="@layout/fragment_bounding_box" />
+
+    <action
+            android:id="@+id/action_boundingBoxFragment_to_addFragment"
+            app:destination="@id/addFragment" />
+
 </navigation>

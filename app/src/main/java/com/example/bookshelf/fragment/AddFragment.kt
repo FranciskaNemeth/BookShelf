@@ -8,10 +8,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -23,7 +19,6 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
@@ -44,7 +39,6 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.Text.TextBlock
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.io.ByteArrayOutputStream
@@ -105,6 +99,16 @@ class AddFragment : Fragment() {
         textInputEditTextDescription = view.findViewById(R.id.textInputEditTextDescription)
         buttonSave = view.findViewById(R.id.buttonSave)
         spinner = view.findViewById(R.id.spinner)
+
+        viewModel.result.observe(viewLifecycleOwner, Observer {
+            textInputEditTextTitle.setText(it.title)
+            textInputEditTextAuthor.setText(it.author)
+        })
+
+        viewModel.image.observe(viewLifecycleOwner, Observer {
+            imageBitmap = viewModel.image.value!!
+            imageView.setImageBitmap(imageBitmap)
+        })
 
         DatabaseManager.getGenresData(object : GetGenreInterface {
             override fun getGenre(genres: MutableList<String>) {
@@ -218,8 +222,7 @@ class AddFragment : Fragment() {
 
         return view
     }
-
-        override fun onResume() {
+    override fun onResume() {
         if( !Utils.isNetworkAvailable(requireContext()) ) {
             val message = "Something went wrong! Please check your internet connection or try again later!"
             AlertDialogFragment().errorHandling(message, requireContext())
@@ -233,7 +236,6 @@ class AddFragment : Fragment() {
             imageBitmap = data?.extras?.get("data") as Bitmap
 
             if (REQUEST_CAMERA == 0) {
-                imageView.setImageBitmap(imageBitmap)
 
                 val storageRef = storage.reference
                 val randomString = Utils.generateRandUUID()
@@ -249,6 +251,7 @@ class AddFragment : Fragment() {
             viewModel.image.value = imageBitmap
 
             view?.let { it -> Navigation.findNavController(it).navigate(R.id.action_addFragment_to_boundingBoxFragment) }
+
             //processImage()
         }
     }
