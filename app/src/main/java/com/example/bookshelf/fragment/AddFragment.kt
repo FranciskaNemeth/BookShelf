@@ -8,6 +8,9 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
@@ -20,6 +23,10 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
 import androidx.test.core.app.ApplicationProvider
 import com.bumptech.glide.Glide
 import com.example.bookshelf.R
@@ -28,6 +35,7 @@ import com.example.bookshelf.interfaces.GetGenreInterface
 import com.example.bookshelf.model.Book
 import com.example.bookshelf.utils.Utils
 import com.example.bookshelf.utils.Utils.PERMISSION_REQUEST_CODE
+import com.example.bookshelf.viewmodel.BoundingBoxViewModel
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -70,11 +78,17 @@ class AddFragment : Fragment() {
     val storage = Firebase.storage
     var imgURL : String? = null
 
+    lateinit var imageBitmap : Bitmap
+
+    lateinit var viewModel: BoundingBoxViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         auth = Firebase.auth
         currentUser = auth.currentUser!!
+
+        viewModel = ViewModelProvider(requireActivity()).get(BoundingBoxViewModel::class.java)
 
     }
 
@@ -216,7 +230,7 @@ class AddFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            val imageBitmap = data?.extras?.get("data") as Bitmap
+            imageBitmap = data?.extras?.get("data") as Bitmap
 
             if (REQUEST_CAMERA == 0) {
                 imageView.setImageBitmap(imageBitmap)
@@ -227,12 +241,15 @@ class AddFragment : Fragment() {
 
                 imgURL = randomString
 
-                val bitmap = (imageView.drawable as BitmapDrawable).bitmap
-                baos = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+//                val bitmap = (imageView.drawable as BitmapDrawable).bitmap
+//                baos = ByteArrayOutputStream()
+//                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
             }
 
-            processImage(imageBitmap)
+            viewModel.image.value = imageBitmap
+
+            view?.let { it -> Navigation.findNavController(it).navigate(R.id.action_addFragment_to_boundingBoxFragment) }
+            //processImage()
         }
     }
 
@@ -295,8 +312,8 @@ class AddFragment : Fragment() {
         }
     }
 
-    fun processImage(image : Bitmap) {
-        val inputImage : InputImage = InputImage.fromBitmap(image, 0)
+    fun processImage() {
+        val inputImage : InputImage = InputImage.fromBitmap(imageBitmap, 0)
 
         val result = recognizer.process(inputImage)
             .addOnSuccessListener { visionText ->
@@ -314,25 +331,43 @@ class AddFragment : Fragment() {
                     }
                 }
 
-                if (REQUEST_CAMERA == 0) {
-                    val textBlocks : List<TextBlock> = visionText.textBlocks
-
-                    if (textBlocks.isNotEmpty()) {
-                        val sortedTextBlocks = textBlocks.sortedByDescending {
-                            it.boundingBox?.width()?.times(it.boundingBox?.height()!!)
-                        }
-
-                        val title = Utils.capitalizeFirstLetters(sortedTextBlocks[0].text)
-                        val author = Utils.capitalizeFirstLetters(sortedTextBlocks[1].text)
-
-                        textInputEditTextTitle.setText(title)
-                        textInputEditTextAuthor.setText(author)
-                    }
-                    else {
-                        Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
-                            Toast.LENGTH_LONG).show()
-                    }
-                }
+//                if (REQUEST_CAMERA == 0) {
+//                    val textBlocks : List<TextBlock> = visionText.textBlocks
+//
+//                    if (textBlocks.isNotEmpty()) {
+//                        val sortedTextBlocks = textBlocks.sortedByDescending {
+//                            it.boundingBox?.width()?.times(it.boundingBox?.height()!!)
+//                        }
+//
+//                        // Create a mutable bitmap
+//                        imageBitmap = imageBitmap.copy(Bitmap.Config.ARGB_8888, true)
+//
+//                        // Get the block bounding box
+//                        val boundingBox = sortedTextBlocks[0].boundingBox
+//                        val canvas = Canvas(imageBitmap)
+//                        val paint = Paint()
+//                        paint.color = Color.RED
+//                        paint.style = Paint.Style.STROKE
+//                        paint.strokeWidth = 1F
+//
+//                        // Draw the rectangle around the text recognized
+//                        if (boundingBox != null) {
+//                            canvas.drawRect(boundingBox!!, paint)
+//                        }
+//
+//                        imageView.setImageBitmap(imageBitmap)
+//
+//                        val title = Utils.capitalizeFirstLetters(sortedTextBlocks[0].text)
+//                        val author = Utils.capitalizeFirstLetters(sortedTextBlocks[1].text)
+//
+//                        textInputEditTextTitle.setText(title)
+//                        textInputEditTextAuthor.setText(author)
+//                    }
+//                    else {
+//                        Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
+//                            Toast.LENGTH_LONG).show()
+//                    }
+//                }
 
             }
             .addOnFailureListener { e ->
@@ -368,4 +403,11 @@ class AddFragment : Fragment() {
 
         alertAdd.show()
     }
+
+//    fun drawRect(g: Graphics) {
+//        val paint = Paint()
+//        paint.setColor(Color.GREEN)
+//        g.drawRect(left, top, right, bottom, paint)
+//        g.drawText(name, x, y, paint)
+//    }
 }

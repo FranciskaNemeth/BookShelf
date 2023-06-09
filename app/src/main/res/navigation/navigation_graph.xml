@@ -60,5 +60,15 @@
     <fragment
         android:id="@+id/addFragment"
         android:name="com.example.bookshelf.fragment.AddFragment"
-        tools:layout="@layout/add_screen" />
+        tools:layout="@layout/add_screen" >
+
+        <action
+            android:id="@+id/action_addFragment_to_boundingBoxFragment"
+            app:destination="@id/boundingBoxFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/boundingBoxFragment"
+        android:name="com.example.bookshelf.fragment.BoundingBoxFragment"
+        tools:layout="@layout/fragment_bounding_box" />
 </navigation>
