@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.PorterDuff
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -27,7 +26,6 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.Text.TextBlock
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -80,9 +78,11 @@ class BoundingBoxFragment : Fragment() {
 
 
         viewModel.image.observe(viewLifecycleOwner, Observer {
-            imageBitmap = viewModel.image.value!!
-            backupImageBitmap = imageBitmap.copy(Bitmap.Config.ARGB_8888, true)
-            processImage()
+            if (it != null) {
+                imageBitmap = it
+                backupImageBitmap = imageBitmap.copy(Bitmap.Config.ARGB_8888, true)
+                processImage()
+            }
         })
 
         swapButton.setOnClickListener {
@@ -93,7 +93,10 @@ class BoundingBoxFragment : Fragment() {
         checkButton.setOnClickListener {
             val boundingBoxResult = BoundingBoxResult(title, author)
             viewModel.result.value = boundingBoxResult
-            view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_boundingBoxFragment_to_addFragment) }
+
+            view?.let { it1 ->
+                Navigation.findNavController(it1).popBackStack(R.id.boundingBoxFragment, true)
+            }
         }
 
         return view

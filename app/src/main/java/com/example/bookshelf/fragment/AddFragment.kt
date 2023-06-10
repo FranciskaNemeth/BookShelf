@@ -101,13 +101,17 @@ class AddFragment : Fragment() {
         spinner = view.findViewById(R.id.spinner)
 
         viewModel.result.observe(viewLifecycleOwner, Observer {
-            textInputEditTextTitle.setText(it.title)
-            textInputEditTextAuthor.setText(it.author)
+            if (it != null) {
+                textInputEditTextTitle.setText(it.title)
+                textInputEditTextAuthor.setText(it.author)
+            }
         })
 
         viewModel.image.observe(viewLifecycleOwner, Observer {
-            imageBitmap = viewModel.image.value!!
-            imageView.setImageBitmap(imageBitmap)
+            if (it != null) {
+                imageBitmap = it
+                imageView.setImageBitmap(imageBitmap)
+            }
         })
 
         DatabaseManager.getGenresData(object : GetGenreInterface {
@@ -229,6 +233,11 @@ class AddFragment : Fragment() {
         }
 
         super.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        clearViewModel()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -407,10 +416,12 @@ class AddFragment : Fragment() {
         alertAdd.show()
     }
 
-//    fun drawRect(g: Graphics) {
-//        val paint = Paint()
-//        paint.setColor(Color.GREEN)
-//        g.drawRect(left, top, right, bottom, paint)
-//        g.drawText(name, x, y, paint)
-//    }
+    private fun clearViewModel() {
+        viewModel.image.removeObservers(viewLifecycleOwner)
+        viewModel.result.removeObservers(viewLifecycleOwner)
+
+        viewModel.image.value = null
+        viewModel.result.value = null
+    }
+
 }
