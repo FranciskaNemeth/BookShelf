@@ -52,8 +52,11 @@ class BoundingBoxFragment : Fragment() {
     lateinit var boundingTextBlock1: BoundingTextBlock  // book title by default
     lateinit var boundingTextBlock2: BoundingTextBlock  // book author by default
 
-    val COLOR_TITLE = Color.rgb(237, 187, 153)
-    val COLOR_AUTHOR = Color.rgb(84, 153, 199)
+//    val COLOR_TITLE = Color.rgb(237, 187, 153)
+//    val COLOR_AUTHOR = Color.rgb(84, 153, 199)
+    val COLOR_TITLE = Color.rgb(0, 102, 255)
+    val COLOR_AUTHOR = Color.rgb(255, 102, 0)
+
     lateinit var canvas : Canvas
 
     override fun onCreate(savedInstanceState: Bundle?) {
