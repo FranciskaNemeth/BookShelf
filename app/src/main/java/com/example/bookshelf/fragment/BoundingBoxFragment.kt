@@ -98,7 +98,7 @@ class BoundingBoxFragment : Fragment() {
             viewModel.result.value = boundingBoxResult
 
             view?.let { it1 ->
-                Navigation.findNavController(it1).popBackStack(R.id.boundingBoxFragment, true)
+                Navigation.findNavController(it1).popBackStack(R.id.addFragment, false)
             }
         }
 
