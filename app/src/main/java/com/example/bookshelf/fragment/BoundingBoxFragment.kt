@@ -12,12 +12,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.example.bookshelf.R
 import com.example.bookshelf.model.BoundingBoxResult
 import com.example.bookshelf.model.BoundingTextBlock
+import com.example.bookshelf.model.CameraRequest
 import com.example.bookshelf.utils.Utils
 import com.example.bookshelf.viewmodel.BoundingBoxViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -37,28 +37,26 @@ class BoundingBoxFragment : Fragment() {
 
     lateinit var imageView: ImageView
     lateinit var checkButton : FloatingActionButton
-    lateinit var swapButton : FloatingActionButton
+    private lateinit var swapButton : FloatingActionButton
 
-    lateinit var viewModel: BoundingBoxViewModel //by viewModels({requireParentFragment()})
+    private lateinit var viewModel: BoundingBoxViewModel
 
     lateinit var imageBitmap : Bitmap
-    lateinit var backupImageBitmap: Bitmap
+    private lateinit var backupImageBitmap: Bitmap
 
     lateinit var title : String
     lateinit var author : String
-    val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     lateinit var sortedTextBlocks : List<TextBlock>
 
-    lateinit var boundingTextBlock1: BoundingTextBlock  // book title by default
-    lateinit var boundingTextBlock2: BoundingTextBlock  // book author by default
+    private lateinit var boundingTextBlock1: BoundingTextBlock  // book title by default
+    private lateinit var boundingTextBlock2: BoundingTextBlock  // book author by default
 
-    var CAMERA_REQUEST : Int? = null
+    private var CAMERA_REQUEST : CameraRequest? = null
     lateinit var description : String
 
-//    val COLOR_TITLE = Color.rgb(237, 187, 153)
-//    val COLOR_AUTHOR = Color.rgb(84, 153, 199)
-    val COLOR_TITLE = Color.rgb(0, 102, 255)
-    val COLOR_AUTHOR = Color.rgb(255, 102, 0)
+    private val COLOR_TITLE = Color.rgb(0, 102, 255)
+    private val COLOR_AUTHOR = Color.rgb(255, 102, 0)
 
     lateinit var canvas : Canvas
 
@@ -82,28 +80,21 @@ class BoundingBoxFragment : Fragment() {
         checkButton = view.findViewById(R.id.checkButton)
         swapButton = view.findViewById(R.id.swapButton)
 
-
-        viewModel.CAMERA_REQUEST.observe(viewLifecycleOwner, Observer {
+        viewModel.images.observe(viewLifecycleOwner) {
             if (it != null) {
-                CAMERA_REQUEST = it
-            }
-        })
+                CAMERA_REQUEST = it.CAMERA_REQUEST
 
-        viewModel.imageDesc.observe(viewLifecycleOwner, Observer {
-            if (it != null) {
-                imageBitmap = it
-                backupImageBitmap = imageBitmap.copy(Bitmap.Config.ARGB_8888, true)
+                if (CAMERA_REQUEST == CameraRequest.COVER) {
+                    backupImageBitmap = it.imageCover!!
+                    imageBitmap = it.imageCover!!
+                } else {
+                    backupImageBitmap = it.imageDesc!!
+                    imageBitmap = it.imageDesc!!
+                }
+
                 processImage()
             }
-        })
-
-        viewModel.imageCover.observe(viewLifecycleOwner, Observer {
-            if (it != null) {
-                imageBitmap = it
-                backupImageBitmap = imageBitmap.copy(Bitmap.Config.ARGB_8888, true)
-                processImage()
-            }
-        })
+        }
 
         swapButton.setOnClickListener {
             swapBoundingBoxes()
@@ -111,7 +102,7 @@ class BoundingBoxFragment : Fragment() {
         }
 
         checkButton.setOnClickListener {
-            if (CAMERA_REQUEST == 0) {
+            if (CAMERA_REQUEST == CameraRequest.COVER) {
                 val boundingBoxResult = BoundingBoxResult(title, author)
                 viewModel.result.value = boundingBoxResult
 
@@ -119,7 +110,7 @@ class BoundingBoxFragment : Fragment() {
                     Navigation.findNavController(it1).popBackStack(R.id.addFragment, false)
                 }
             }
-            else if (CAMERA_REQUEST == 1) {
+            else if (CAMERA_REQUEST == CameraRequest.DESCRIPTION) {
                 viewModel.description.value = description
 
                 view?.let { it1 ->
@@ -132,12 +123,12 @@ class BoundingBoxFragment : Fragment() {
         return view
     }
 
-    fun processImage() {
+    private fun processImage() {
         val inputImage : InputImage = InputImage.fromBitmap(imageBitmap, 0)
 
-        val result = recognizer.process(inputImage)
+        recognizer.process(inputImage)
             .addOnSuccessListener { visionText ->
-                if (CAMERA_REQUEST == 1) {
+                if (CAMERA_REQUEST == CameraRequest.DESCRIPTION) {
                     val resultText = visionText.text
 
                     if (resultText.isNotEmpty()) {
@@ -149,6 +140,7 @@ class BoundingBoxFragment : Fragment() {
 
                         swapButton.isEnabled = false
                         checkButton.isEnabled = true
+
                     }
                     else {
                         Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
@@ -156,7 +148,7 @@ class BoundingBoxFragment : Fragment() {
                     }
                 }
 
-                if (CAMERA_REQUEST == 0) {
+                if (CAMERA_REQUEST == CameraRequest.COVER) {
                     val textBlocks : List<TextBlock> = visionText.textBlocks
 
                     if (textBlocks.isNotEmpty()) {
@@ -174,6 +166,7 @@ class BoundingBoxFragment : Fragment() {
 
                         swapButton.isEnabled = true
                         checkButton.isEnabled = true
+
 
                     }
                     else {
@@ -196,7 +189,6 @@ class BoundingBoxFragment : Fragment() {
     }
 
     private fun draw(boundingTextBlock1: BoundingTextBlock, boundingTextBlock2: BoundingTextBlock) {
-        //clearCanvas()
         drawBitmap()
         drawBoundingBoxWithLabel(boundingTextBlock1.textBlock,
             boundingTextBlock1.label,
@@ -227,7 +219,7 @@ class BoundingBoxFragment : Fragment() {
 
             // Draw the rectangle around the text recognized
             if (boundingBox != null) {
-                canvas.drawRect(boundingBox!!, paintBoundingBox)
+                canvas.drawRect(boundingBox, paintBoundingBox)
                 canvas.drawText(label, boundingBox.left.toFloat(), boundingBox.top.toFloat() - 15, paintLabel)
             }
         }

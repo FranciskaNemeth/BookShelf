@@ -23,6 +23,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.example.bookshelf.R
 import com.example.bookshelf.databinding.FragmentImageCaptureBinding
+import com.example.bookshelf.model.CameraRequest
+import com.example.bookshelf.model.Images
 import com.example.bookshelf.viewmodel.BoundingBoxViewModel
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -34,6 +36,7 @@ class ImageCaptureFragment : Fragment() {
     lateinit var viewModel: BoundingBoxViewModel
 
     private var imageCapture: ImageCapture? = null
+    private var CAMERA_REQUEST : CameraRequest? = null
 
     private lateinit var cameraExecutor: ExecutorService
 
@@ -44,7 +47,7 @@ class ImageCaptureFragment : Fragment() {
             // Handle Permission granted/rejected
             var permissionGranted = true
             permissions.entries.forEach {
-                if (it.key in REQUIRED_PERMISSIONS && it.value == false)
+                if (it.key in REQUIRED_PERMISSIONS && !it.value)
                     permissionGranted = false
             }
             if (!permissionGranted) {
@@ -69,12 +72,18 @@ class ImageCaptureFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Request camera permissions
         if (allPermissionsGranted()) {
             startCamera()
         } else {
             requestPermissions()
+        }
+
+        viewModel.images.observe(viewLifecycleOwner) {
+            if (it != null) {
+                CAMERA_REQUEST = it.CAMERA_REQUEST
+            }
         }
 
         viewBinding.imgCapture.setOnClickListener {
@@ -140,9 +149,18 @@ class ImageCaptureFragment : Fragment() {
                     super.onCaptureSuccess(image)
 
                     val capturedImageBitmap = image.image?.toBitmap()?.rotate(image.imageInfo.rotationDegrees.toFloat())
-                    viewModel.imageCover.value = capturedImageBitmap
-                    viewModel.imageDesc.value = capturedImageBitmap
-                    view?.let { it -> Navigation.findNavController(it).navigate(R.id.action_imageCaptureFragment_to_boundingBoxFragment) }
+
+                    if (CAMERA_REQUEST == CameraRequest.COVER) {
+                        viewModel.images.value = Images(capturedImageBitmap, null, CAMERA_REQUEST)
+                    }
+
+                    if (CAMERA_REQUEST == CameraRequest.DESCRIPTION) {
+                        viewModel.images.value = Images(null, capturedImageBitmap, CAMERA_REQUEST)
+                    }
+
+                    view?.let {
+                        Navigation.findNavController(it).navigate(R.id.action_imageCaptureFragment_to_boundingBoxFragment)
+                    }
                 }
             }
         )

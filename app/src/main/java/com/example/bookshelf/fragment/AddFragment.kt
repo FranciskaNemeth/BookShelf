@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.bumptech.glide.Glide
@@ -17,6 +16,8 @@ import com.example.bookshelf.R
 import com.example.bookshelf.database.DatabaseManager
 import com.example.bookshelf.interfaces.GetGenreInterface
 import com.example.bookshelf.model.Book
+import com.example.bookshelf.model.CameraRequest
+import com.example.bookshelf.model.Images
 import com.example.bookshelf.utils.Utils
 import com.example.bookshelf.viewmodel.BoundingBoxViewModel
 import com.google.android.material.textfield.TextInputEditText
@@ -26,8 +27,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.io.ByteArrayOutputStream
 
 
@@ -52,7 +51,6 @@ class AddFragment : Fragment() {
     lateinit var mountainsRef : StorageReference
     var baos = ByteArrayOutputStream()
 
-    val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     val storage = Firebase.storage
     var imgURL : String? = null
 
@@ -84,25 +82,31 @@ class AddFragment : Fragment() {
         buttonSave = view.findViewById(R.id.buttonSave)
         spinner = view.findViewById(R.id.spinner)
 
-        viewModel.description.observe(viewLifecycleOwner, Observer {
+        viewModel.description.observe(viewLifecycleOwner) {
             if (it != null) {
                 textInputEditTextDescription.setText(it)
             }
-        })
+        }
 
-        viewModel.result.observe(viewLifecycleOwner, Observer {
+        viewModel.result.observe(viewLifecycleOwner) {
             if (it != null) {
                 textInputEditTextTitle.setText(it.title)
                 textInputEditTextAuthor.setText(it.author)
             }
-        })
+        }
 
-        viewModel.imageCover.observe(viewLifecycleOwner, Observer {
+        viewModel.images.observe(viewLifecycleOwner) {
             if (it != null) {
-                imageBitmap = it
-                imageView.setImageBitmap(imageBitmap)
+                if (it.CAMERA_REQUEST == CameraRequest.COVER && it.imageCover != null) {
+                    imageBitmap = it.imageCover!!
+                }
+
+                if (this::imageBitmap.isInitialized) {
+                    imageView.setImageBitmap(imageBitmap)
+                }
+
             }
-        })
+        }
 
         DatabaseManager.getGenresData(object : GetGenreInterface {
             override fun getGenre(genres: MutableList<String>) {
@@ -120,9 +124,9 @@ class AddFragment : Fragment() {
                     imgURL = book.imageURL
                     val ref = storage.reference.child("images/" + book.imageURL + ".jpg")
                     ref.downloadUrl.addOnSuccessListener { Uri ->
-                        val imageurl = Uri.toString()
+                        val imageUrl = Uri.toString()
                         Glide.with(requireActivity())
-                            .load(imageurl)
+                            .load(imageUrl)
                             .into(imageView)
                     }
                     val title = Utils.capitalizeFirstLetters(book.title)
@@ -132,22 +136,26 @@ class AddFragment : Fragment() {
                     textInputEditTextAuthor.setText(author)
                     textInputEditTextDescription.setText(book.description)
 
-                    spinner.post(Runnable {
+                    spinner.post {
                         spinner.setSelection(genres.indexOf(book.genre))
-                    })
+                    }
                 }
             }
         })
 
         val takePhotoButton: ImageButton = view.findViewById(R.id.imageButton)
         takePhotoButton.setOnClickListener {
-            viewModel.CAMERA_REQUEST.value = 0
+            //viewModel.CAMERA_REQUEST.value = 0
+            //viewModel.images.value?.CAMERA_REQUEST = 0
+            viewModel.images.value = Images(null, null, CameraRequest.COVER)
             view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_addFragment_to_imageCaptureFragment) }
         }
 
         val takePhotoDesc: ImageButton = view.findViewById(R.id.imageButtonDesc)
         takePhotoDesc.setOnClickListener {
-            viewModel.CAMERA_REQUEST.value = 1
+            //viewModel.CAMERA_REQUEST.value = 1
+            // viewModel.images.value!!.CAMERA_REQUEST = 1
+            viewModel.images.value = Images(null, null, CameraRequest.DESCRIPTION)
             view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_addFragment_to_imageCaptureFragment) }
 
         }
@@ -155,6 +163,8 @@ class AddFragment : Fragment() {
         imageView.setOnClickListener {
             showPicture()
         }
+
+        //imageView.set
 
         buttonSave.setOnClickListener {
             bookGenre = spinner.selectedItem.toString()
@@ -216,11 +226,6 @@ class AddFragment : Fragment() {
         super.onResume()
     }
 
-    override fun onPause() {
-        super.onPause()
-        clearViewModel()
-    }
-
 //    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 //        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
 //            imageBitmap = data?.extras?.get("data") as Bitmap
@@ -249,6 +254,7 @@ class AddFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         DatabaseManager.deleteSelectedBookData()
+        clearViewModel()
         Log.d("DELETE", "delete selected book")
     }
 
@@ -261,15 +267,14 @@ class AddFragment : Fragment() {
         if(this::book.isInitialized) {
             val ref = storage.reference.child("images/" + book.imageURL + ".jpg")
             ref.downloadUrl.addOnSuccessListener { Uri ->
-                val imageurl = Uri.toString()
+                val imageUrl = Uri.toString()
                 Glide.with(requireActivity())
-                    .load(imageurl)
+                    .load(imageUrl)
                     .placeholder(R.drawable.logo)
                     .into(img)
             }
         }
-
-        if (this::imageBitmap.isInitialized){
+        else if (this::imageBitmap.isInitialized){
             Glide.with(requireActivity())
                 .load(imageBitmap)
                 .placeholder(R.drawable.logo)
@@ -285,11 +290,14 @@ class AddFragment : Fragment() {
     }
 
     private fun clearViewModel() {
-        viewModel.imageCover.removeObservers(viewLifecycleOwner)
+        viewModel.images.removeObservers(viewLifecycleOwner)
         viewModel.result.removeObservers(viewLifecycleOwner)
+        viewModel.description.removeObservers(viewLifecycleOwner)
 
-        viewModel.imageCover.value = null
+        viewModel.images.value = null
         viewModel.result.value = null
+        viewModel.description.value = null
+
     }
 
 }
