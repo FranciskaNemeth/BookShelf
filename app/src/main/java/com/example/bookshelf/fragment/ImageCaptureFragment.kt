@@ -140,7 +140,8 @@ class ImageCaptureFragment : Fragment() {
                     super.onCaptureSuccess(image)
 
                     val capturedImageBitmap = image.image?.toBitmap()?.rotate(image.imageInfo.rotationDegrees.toFloat())
-                    viewModel.image.value = capturedImageBitmap
+                    viewModel.imageCover.value = capturedImageBitmap
+                    viewModel.imageDesc.value = capturedImageBitmap
                     view?.let { it -> Navigation.findNavController(it).navigate(R.id.action_imageCaptureFragment_to_boundingBoxFragment) }
                 }
             }

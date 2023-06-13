@@ -52,6 +52,9 @@ class BoundingBoxFragment : Fragment() {
     lateinit var boundingTextBlock1: BoundingTextBlock  // book title by default
     lateinit var boundingTextBlock2: BoundingTextBlock  // book author by default
 
+    var CAMERA_REQUEST : Int? = null
+    lateinit var description : String
+
 //    val COLOR_TITLE = Color.rgb(237, 187, 153)
 //    val COLOR_AUTHOR = Color.rgb(84, 153, 199)
     val COLOR_TITLE = Color.rgb(0, 102, 255)
@@ -80,7 +83,21 @@ class BoundingBoxFragment : Fragment() {
         swapButton = view.findViewById(R.id.swapButton)
 
 
-        viewModel.image.observe(viewLifecycleOwner, Observer {
+        viewModel.CAMERA_REQUEST.observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                CAMERA_REQUEST = it
+            }
+        })
+
+        viewModel.imageDesc.observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                imageBitmap = it
+                backupImageBitmap = imageBitmap.copy(Bitmap.Config.ARGB_8888, true)
+                processImage()
+            }
+        })
+
+        viewModel.imageCover.observe(viewLifecycleOwner, Observer {
             if (it != null) {
                 imageBitmap = it
                 backupImageBitmap = imageBitmap.copy(Bitmap.Config.ARGB_8888, true)
@@ -94,12 +111,22 @@ class BoundingBoxFragment : Fragment() {
         }
 
         checkButton.setOnClickListener {
-            val boundingBoxResult = BoundingBoxResult(title, author)
-            viewModel.result.value = boundingBoxResult
+            if (CAMERA_REQUEST == 0) {
+                val boundingBoxResult = BoundingBoxResult(title, author)
+                viewModel.result.value = boundingBoxResult
 
-            view?.let { it1 ->
-                Navigation.findNavController(it1).popBackStack(R.id.addFragment, false)
+                view?.let { it1 ->
+                    Navigation.findNavController(it1).popBackStack(R.id.addFragment, false)
+                }
             }
+            else if (CAMERA_REQUEST == 1) {
+                viewModel.description.value = description
+
+                view?.let { it1 ->
+                    Navigation.findNavController(it1).popBackStack(R.id.addFragment, false)
+                }
+            }
+
         }
 
         return view
@@ -110,35 +137,54 @@ class BoundingBoxFragment : Fragment() {
 
         val result = recognizer.process(inputImage)
             .addOnSuccessListener { visionText ->
+                if (CAMERA_REQUEST == 1) {
+                    val resultText = visionText.text
 
-                val textBlocks : List<TextBlock> = visionText.textBlocks
+                    if (resultText.isNotEmpty()) {
+                        Log.d("RES", resultText)
+                        description = resultText
+                        viewModel.description.value = resultText
 
-                if (textBlocks.isNotEmpty()) {
-                    sortedTextBlocks = textBlocks.sortedByDescending {
-                        it.boundingBox?.width()?.times(it.boundingBox?.height()!!)
+                        drawBitmap()
+
+                        swapButton.isEnabled = false
+                        checkButton.isEnabled = true
                     }
-
-                    boundingTextBlock1 = BoundingTextBlock(sortedTextBlocks[0], "title", COLOR_TITLE)
-                    boundingTextBlock2 = BoundingTextBlock(sortedTextBlocks[1], "author", COLOR_AUTHOR)
-
-                    draw(boundingTextBlock1, boundingTextBlock2)
-
-                    title = Utils.capitalizeFirstLetters(sortedTextBlocks[0].text)
-                    author = Utils.capitalizeFirstLetters(sortedTextBlocks[1].text)
-
-                    swapButton.isEnabled = true
-                    checkButton.isEnabled = true
-
-                }
-                else {
-                    Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
-                        Toast.LENGTH_LONG).show()
-
-                    swapButton.isEnabled = false
-                    checkButton.isEnabled = false
-
+                    else {
+                        Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
+                            Toast.LENGTH_LONG).show()
+                    }
                 }
 
+                if (CAMERA_REQUEST == 0) {
+                    val textBlocks : List<TextBlock> = visionText.textBlocks
+
+                    if (textBlocks.isNotEmpty()) {
+                        sortedTextBlocks = textBlocks.sortedByDescending {
+                            it.boundingBox?.width()?.times(it.lines[0].boundingBox?.height()!!)
+                        }
+
+                        boundingTextBlock1 = BoundingTextBlock(sortedTextBlocks[0], "title", COLOR_TITLE)
+                        boundingTextBlock2 = BoundingTextBlock(sortedTextBlocks[1], "author", COLOR_AUTHOR)
+
+                        draw(boundingTextBlock1, boundingTextBlock2)
+
+                        title = Utils.capitalizeFirstLetters(sortedTextBlocks[0].text)
+                        author = Utils.capitalizeFirstLetters(sortedTextBlocks[1].text)
+
+                        swapButton.isEnabled = true
+                        checkButton.isEnabled = true
+
+                    }
+                    else {
+                        Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
+                            Toast.LENGTH_LONG).show()
+
+                        swapButton.isEnabled = false
+                        checkButton.isEnabled = false
+
+                    }
+                }
             }
             .addOnFailureListener { e ->
                 // Task failed with an exception
@@ -173,16 +219,16 @@ class BoundingBoxFragment : Fragment() {
 
             paintBoundingBox.color = color
             paintBoundingBox.style = Paint.Style.STROKE
-            paintBoundingBox.strokeWidth = 1F
+            paintBoundingBox.strokeWidth = 20F
 
             val paintLabel = Paint()
             paintLabel.color = color
-            paintLabel.textSize = 10F
+            paintLabel.textSize = 150F
 
             // Draw the rectangle around the text recognized
             if (boundingBox != null) {
                 canvas.drawRect(boundingBox!!, paintBoundingBox)
-                canvas.drawText(label, boundingBox.left.toFloat(), boundingBox.top.toFloat(), paintLabel)
+                canvas.drawText(label, boundingBox.left.toFloat(), boundingBox.top.toFloat() - 15, paintLabel)
             }
         }
 

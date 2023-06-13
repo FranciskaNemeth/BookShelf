@@ -32,9 +32,6 @@ import java.io.ByteArrayOutputStream
 
 
 class AddFragment : Fragment() {
-    val REQUEST_IMAGE_CAPTURE = 1
-    var REQUEST_CAMERA : Int = -1
-
     lateinit var imageView : ImageView
     lateinit var textInputEditTextAuthor : TextInputEditText
     lateinit var textInputEditTextTitle: TextInputEditText
@@ -87,6 +84,12 @@ class AddFragment : Fragment() {
         buttonSave = view.findViewById(R.id.buttonSave)
         spinner = view.findViewById(R.id.spinner)
 
+        viewModel.description.observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                textInputEditTextDescription.setText(it)
+            }
+        })
+
         viewModel.result.observe(viewLifecycleOwner, Observer {
             if (it != null) {
                 textInputEditTextTitle.setText(it.title)
@@ -94,7 +97,7 @@ class AddFragment : Fragment() {
             }
         })
 
-        viewModel.image.observe(viewLifecycleOwner, Observer {
+        viewModel.imageCover.observe(viewLifecycleOwner, Observer {
             if (it != null) {
                 imageBitmap = it
                 imageView.setImageBitmap(imageBitmap)
@@ -138,28 +141,16 @@ class AddFragment : Fragment() {
 
         val takePhotoButton: ImageButton = view.findViewById(R.id.imageButton)
         takePhotoButton.setOnClickListener {
-//            if (Utils.checkPermission(requireActivity())) {
-//                REQUEST_CAMERA = 0
-//                //dispatchTakePictureIntent()
-//                capturePhoto()
-//            } else {
-//                REQUEST_CAMERA = 0
-//                Utils.requestPermission(requireActivity())
-//            }
-            REQUEST_CAMERA = 0
+            viewModel.CAMERA_REQUEST.value = 0
             view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_addFragment_to_imageCaptureFragment) }
         }
 
-//        val takePhotoDesc: ImageButton = view.findViewById(R.id.imageButtonDesc)
-//        takePhotoDesc.setOnClickListener {
-//            if (Utils.checkPermission(requireActivity())) {
-//                REQUEST_CAMERA = 1
-//                dispatchTakePictureIntent()
-//            } else {
-//                REQUEST_CAMERA = 1
-//                Utils.requestPermission(requireActivity())
-//            }
-//        }
+        val takePhotoDesc: ImageButton = view.findViewById(R.id.imageButtonDesc)
+        takePhotoDesc.setOnClickListener {
+            viewModel.CAMERA_REQUEST.value = 1
+            view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_addFragment_to_imageCaptureFragment) }
+
+        }
 
         imageView.setOnClickListener {
             showPicture()
@@ -261,126 +252,6 @@ class AddFragment : Fragment() {
         Log.d("DELETE", "delete selected book")
     }
 
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<out String>,
-//        grantResults: IntArray
-//    ) {
-//        when (requestCode) {
-//            PERMISSION_REQUEST_CODE -> if (grantResults.isNotEmpty() && grantResults[0] === PackageManager.PERMISSION_GRANTED) {
-//                Toast.makeText(
-//                    ApplicationProvider.getApplicationContext<Context>(),
-//                    "Permission Granted",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//
-//                // main logic
-//            } else {
-//                Toast.makeText(
-//                    ApplicationProvider.getApplicationContext<Context>(),
-//                    "Permission Denied",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                    if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA)
-//                        != PackageManager.PERMISSION_GRANTED
-//                    ) {
-//                        Utils.showMessageOKCancel(requireActivity(), "You need to allow access permissions",
-//                            DialogInterface.OnClickListener { dialog, which ->
-//                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                                    Utils.requestPermission(requireActivity())
-//                                }
-//                            })
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-//    private fun dispatchTakePictureIntent() {
-//        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-//        try {
-//            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-//        } catch (e: ActivityNotFoundException) {
-//            // display error state to the user
-//            Log.d("ERROR", "Camera not found (activity)")
-//
-//            Utils.showMessageOKCancel(requireActivity(), "Can't open Camera!",
-//                DialogInterface.OnClickListener { dialog, which ->
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                        Utils.requestPermission(requireActivity())
-//                    }
-//                })
-//        }
-//    }
-
-//    fun processImage() {
-//        val inputImage : InputImage = InputImage.fromBitmap(imageBitmap, 0)
-//
-//        val result = recognizer.process(inputImage)
-//            .addOnSuccessListener { visionText ->
-//                if (REQUEST_CAMERA == 1) {
-//                    val resultText = visionText.text
-//
-//                    if (resultText.isNotEmpty()) {
-//                        Log.d("RES", resultText)
-//                        textInputEditTextDescription.setText(resultText)
-//
-//                    }
-//                    else {
-//                        Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
-//                            Toast.LENGTH_LONG).show()
-//                    }
-//                }
-//
-////                if (REQUEST_CAMERA == 0) {
-////                    val textBlocks : List<TextBlock> = visionText.textBlocks
-////
-////                    if (textBlocks.isNotEmpty()) {
-////                        val sortedTextBlocks = textBlocks.sortedByDescending {
-////                            it.boundingBox?.width()?.times(it.boundingBox?.height()!!)
-////                        }
-////
-////                        // Create a mutable bitmap
-////                        imageBitmap = imageBitmap.copy(Bitmap.Config.ARGB_8888, true)
-////
-////                        // Get the block bounding box
-////                        val boundingBox = sortedTextBlocks[0].boundingBox
-////                        val canvas = Canvas(imageBitmap)
-////                        val paint = Paint()
-////                        paint.color = Color.RED
-////                        paint.style = Paint.Style.STROKE
-////                        paint.strokeWidth = 1F
-////
-////                        // Draw the rectangle around the text recognized
-////                        if (boundingBox != null) {
-////                            canvas.drawRect(boundingBox!!, paint)
-////                        }
-////
-////                        imageView.setImageBitmap(imageBitmap)
-////
-////                        val title = Utils.capitalizeFirstLetters(sortedTextBlocks[0].text)
-////                        val author = Utils.capitalizeFirstLetters(sortedTextBlocks[1].text)
-////
-////                        textInputEditTextTitle.setText(title)
-////                        textInputEditTextAuthor.setText(author)
-////                    }
-////                    else {
-////                        Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
-////                            Toast.LENGTH_LONG).show()
-////                    }
-////                }
-//
-//            }
-//            .addOnFailureListener { e ->
-//                // Task failed with an exception
-//                Log.d("ERROR", e.toString())
-//
-//                Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
-//                    Toast.LENGTH_LONG).show()
-//            }
-//    }
-
     private fun showPicture() {
         val alertAdd = AlertDialog.Builder(requireContext())
         val factory = LayoutInflater.from(requireContext())
@@ -398,6 +269,13 @@ class AddFragment : Fragment() {
             }
         }
 
+        if (this::imageBitmap.isInitialized){
+            Glide.with(requireActivity())
+                .load(imageBitmap)
+                .placeholder(R.drawable.logo)
+                .into(img)
+        }
+
         alertAdd.setView(view)
         alertAdd.setNeutralButton("Close") { _, _ ->
 
@@ -407,10 +285,10 @@ class AddFragment : Fragment() {
     }
 
     private fun clearViewModel() {
-        viewModel.image.removeObservers(viewLifecycleOwner)
+        viewModel.imageCover.removeObservers(viewLifecycleOwner)
         viewModel.result.removeObservers(viewLifecycleOwner)
 
-        viewModel.image.value = null
+        viewModel.imageCover.value = null
         viewModel.result.value = null
     }
 
