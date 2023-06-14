@@ -15,6 +15,8 @@ import com.bumptech.glide.Glide
 import com.example.bookshelf.R
 import com.example.bookshelf.database.DatabaseManager
 import com.example.bookshelf.interfaces.GetGenreInterface
+import com.example.bookshelf.interfaces.UpdateBookDataInterface
+import com.example.bookshelf.interfaces.UploadBookCoverImageInterface
 import com.example.bookshelf.model.Book
 import com.example.bookshelf.model.CameraRequest
 import com.example.bookshelf.model.Images
@@ -25,9 +27,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
-import java.io.ByteArrayOutputStream
 
 
 class AddFragment : Fragment() {
@@ -47,12 +47,9 @@ class AddFragment : Fragment() {
 
     lateinit var book : Book
 
-    lateinit var dataB : ByteArray
-    lateinit var mountainsRef : StorageReference
-    var baos = ByteArrayOutputStream()
-
     val storage = Firebase.storage
     var imgURL : String? = null
+    var coverImageHasChanged: Boolean = false
 
     lateinit var imageBitmap : Bitmap
 
@@ -99,12 +96,12 @@ class AddFragment : Fragment() {
             if (it != null) {
                 if (it.CAMERA_REQUEST == CameraRequest.COVER && it.imageCover != null) {
                     imageBitmap = it.imageCover!!
+                    coverImageHasChanged = true
                 }
 
                 if (this::imageBitmap.isInitialized) {
                     imageView.setImageBitmap(imageBitmap)
                 }
-
             }
         }
 
@@ -119,6 +116,7 @@ class AddFragment : Fragment() {
                 spinner.adapter = spinnerAdapter
 
                 val selectedBook = DatabaseManager.getSelectedBookData()
+
                 if(selectedBook != null ) {
                     book = selectedBook
                     imgURL = book.imageURL
@@ -129,6 +127,7 @@ class AddFragment : Fragment() {
                             .load(imageUrl)
                             .into(imageView)
                     }
+
                     val title = Utils.capitalizeFirstLetters(book.title)
                     val author = Utils.capitalizeFirstLetters(book.author)
 
@@ -145,16 +144,12 @@ class AddFragment : Fragment() {
 
         val takePhotoButton: ImageButton = view.findViewById(R.id.imageButton)
         takePhotoButton.setOnClickListener {
-            //viewModel.CAMERA_REQUEST.value = 0
-            //viewModel.images.value?.CAMERA_REQUEST = 0
             viewModel.images.value = Images(null, null, CameraRequest.COVER)
             view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_addFragment_to_imageCaptureFragment) }
         }
 
         val takePhotoDesc: ImageButton = view.findViewById(R.id.imageButtonDesc)
         takePhotoDesc.setOnClickListener {
-            //viewModel.CAMERA_REQUEST.value = 1
-            // viewModel.images.value!!.CAMERA_REQUEST = 1
             viewModel.images.value = Images(null, null, CameraRequest.DESCRIPTION)
             view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_addFragment_to_imageCaptureFragment) }
 
@@ -164,55 +159,94 @@ class AddFragment : Fragment() {
             showPicture()
         }
 
-        //imageView.set
-
         buttonSave.setOnClickListener {
             bookGenre = spinner.selectedItem.toString()
 
-            if(!imgURL.isNullOrEmpty()) {
-                if (textInputEditTextTitle.text.toString().isNullOrEmpty() ||
-                    textInputEditTextAuthor.text.toString().isNullOrEmpty() ||
-                    bookGenre.isNullOrEmpty() ||
-                    textInputEditTextDescription.text.toString().isNullOrEmpty()) {
+            if (textInputEditTextTitle.text.toString().isNullOrEmpty() ||
+                textInputEditTextAuthor.text.toString().isNullOrEmpty() ||
+                bookGenre.isNullOrEmpty() ||
+                textInputEditTextDescription.text.toString().isNullOrEmpty()) {
 
-                    val message = "One or more fields are empty. Check again, and fill out every field!"
-                    AlertDialogFragment().addBookErrorHandling(message,requireContext())
-                }
-                else {
-                    val b = Book(
-                        imgURL!!, textInputEditTextTitle.text.toString(),
-                        textInputEditTextAuthor.text.toString(),
-                        bookGenre, textInputEditTextDescription.text.toString(), false
-                    )
+                val message = "One or more fields are empty. Check again, and fill out every field!"
+                AlertDialogFragment().addBookErrorHandling(message,requireContext())
 
-                    DatabaseManager.updateBookData(currentUser.email!!, b)
-
-                    dataB = baos.toByteArray()
-
-                    if (dataB.size > 0) {
-                        val storageRef = storage.reference
-                        mountainsRef = storageRef.child("images/" + imgURL + ".jpg")
-                        val uploadTask = mountainsRef.putBytes(dataB)
-                        uploadTask.addOnFailureListener {
-                            // Handle unsuccessful uploads
-                            Toast.makeText(requireActivity(), "Upload: failed!",
-                                Toast.LENGTH_LONG).show()
-                        }.addOnSuccessListener { taskSnapshot ->
-                            Log.d("UPLOAD", "Succes")
-                            Toast.makeText(requireActivity(), "Upload: succeeded!",
-                                Toast.LENGTH_LONG).show()
-                            requireActivity().onBackPressed()
-                        }
-                    }
-                    else {
-                        requireActivity().onBackPressed()
-                    }
-                }
+                return@setOnClickListener
             }
-            else {
+
+            if (coverImageHasChanged && !this::imageBitmap.isInitialized) {
                 val message = "Image not found! Take another picture."
                 AlertDialogFragment().addBookErrorHandling(message,requireContext())
+
+                return@setOnClickListener
             }
+
+            // if the book is initialized it means that we are updating
+            if (this::book.isInitialized) {
+                book.title = textInputEditTextTitle.text.toString()
+                book.author = textInputEditTextAuthor.text.toString()
+                book.genre = bookGenre
+                book.description = textInputEditTextDescription.text.toString()
+                // isFav is not modified here
+            }
+            else {
+                 book = Book(
+                     "",  // empty string is set for the time being; will update once image is uploaded
+                     textInputEditTextTitle.text.toString(),
+                     textInputEditTextAuthor.text.toString(),
+                     bookGenre,
+                     textInputEditTextDescription.text.toString(),
+                     false
+                )
+            }
+
+            if (coverImageHasChanged) {
+                DatabaseManager.uploadBookCoverImage(imageBitmap, imgURL, object: UploadBookCoverImageInterface {
+                    override fun onSuccess(imageUrl: String) {
+                        book.imageURL = imageUrl
+                        DatabaseManager.updateBookData(currentUser.email!!, book, object: UpdateBookDataInterface {
+                            override fun onSuccess() {
+                                Toast.makeText(requireActivity(), "Upload succeeded!",
+                                    Toast.LENGTH_LONG).show()
+
+                                view?.let { it1 ->
+                                    Navigation.findNavController(it1).popBackStack(R.id.mainFragment, false)
+                                }
+                            }
+
+                            override fun onError(reason: String?) {
+                                val message = "$reason"
+                                AlertDialogFragment().addBookErrorHandling(message,requireContext())
+                            }
+
+                        })
+                    }
+
+                    override fun onError(reason: String?) {
+                        val message = "$reason"
+                        AlertDialogFragment().addBookErrorHandling(message,requireContext())
+                    }
+
+                })
+            }
+            else {
+                DatabaseManager.updateBookData(currentUser.email!!, book, object: UpdateBookDataInterface {
+                    override fun onSuccess() {
+                        Toast.makeText(requireActivity(), "Upload succeeded!",
+                            Toast.LENGTH_LONG).show()
+
+                        view?.let { it1 ->
+                            Navigation.findNavController(it1).popBackStack(R.id.mainFragment, false)
+                        }
+                    }
+
+                    override fun onError(reason: String?) {
+                        val message = "$reason"
+                        AlertDialogFragment().addBookErrorHandling(message,requireContext())
+                    }
+
+                })
+            }
+
         }
 
         return view
@@ -226,35 +260,11 @@ class AddFragment : Fragment() {
         super.onResume()
     }
 
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-//            imageBitmap = data?.extras?.get("data") as Bitmap
-//
-//            if (REQUEST_CAMERA == 0) {
-//
-//                val storageRef = storage.reference
-//                val randomString = Utils.generateRandUUID()
-//                mountainsRef = storageRef.child("images/" + randomString + ".jpg")
-//
-//                imgURL = randomString
-//
-////                val bitmap = (imageView.drawable as BitmapDrawable).bitmap
-////                baos = ByteArrayOutputStream()
-////                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-//            }
-//
-//            viewModel.image.value = imageBitmap
-//
-//            view?.let { it -> Navigation.findNavController(it).navigate(R.id.action_addFragment_to_boundingBoxFragment) }
-//
-//            //processImage()
-//        }
-//    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         DatabaseManager.deleteSelectedBookData()
         clearViewModel()
+
         Log.d("DELETE", "delete selected book")
     }
 

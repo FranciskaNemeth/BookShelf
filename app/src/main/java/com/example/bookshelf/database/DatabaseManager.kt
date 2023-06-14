@@ -1,15 +1,20 @@
 package com.example.bookshelf.database
 
+import android.graphics.Bitmap
 import android.util.Log
-import com.example.bookshelf.interfaces.GetBookInterface
 import com.example.bookshelf.interfaces.GetBooksInterface
 import com.example.bookshelf.interfaces.GetGenreInterface
 import com.example.bookshelf.interfaces.GetUserInterface
+import com.example.bookshelf.interfaces.UpdateBookDataInterface
+import com.example.bookshelf.interfaces.UploadBookCoverImageInterface
 import com.example.bookshelf.model.Book
 import com.example.bookshelf.model.Genre
 import com.example.bookshelf.model.User
+import com.example.bookshelf.utils.Utils
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import java.io.ByteArrayOutputStream
 
 object DatabaseManager {
     lateinit var user : User
@@ -102,17 +107,33 @@ object DatabaseManager {
             }
     }
 
-    fun updateBookData(email: String, b: Book) {
+    fun updateBookData(email: String, b: Book, updateBookDataInterface: UpdateBookDataInterface? = null) {
         Firebase.firestore.collection("books").document(email)
             .collection("allbooks")
             .document(b.imageURL)
             .set(b.bookToHashMapOf())
-            .addOnSuccessListener { documentReference ->
-                book = b
+            .addOnSuccessListener { _ ->
+                updateBookDataInterface?.onSuccess()
             }
             .addOnFailureListener { e ->
-                Log.w("TAG", "Error adding document", e)
+                updateBookDataInterface?.onError(e.message)
             }
+    }
+
+    fun uploadBookCoverImage(bookCoverImage: Bitmap, imageUrl: String?, uploadBookCoverImageInterface: UploadBookCoverImageInterface? = null) {
+        val randomString: String = imageUrl ?: Utils.generateRandUUID()
+
+        val storageRef = Firebase.storage.reference.child("images/$randomString.jpg")
+
+        val baos = ByteArrayOutputStream()
+        bookCoverImage.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data = baos.toByteArray()
+
+        storageRef.putBytes(data).addOnSuccessListener {
+            uploadBookCoverImageInterface?.onSuccess(randomString)
+        }.addOnFailureListener {
+            uploadBookCoverImageInterface?.onError(it.message)
+        }
     }
 
     private fun mapToBook(map: MutableMap<String, Any>) : Book {
