@@ -132,9 +132,17 @@ class AddFragment : Fragment() {
                     val ref = storage.reference.child("images/" + book.imageURL + ".jpg")
                     ref.downloadUrl.addOnSuccessListener { Uri ->
                         val imageUrl = Uri.toString()
-                        Glide.with(requireActivity())
-                            .load(imageUrl)
-                            .into(imageView)
+                        Thread {
+                            imageBitmap = Glide.with(requireActivity())
+                                .asBitmap()
+                                .load(imageUrl)
+                                .submit()
+                                .get()
+
+                            view.post {
+                                imageView.setImageBitmap(imageBitmap)
+                            }
+                        }.start()
                     }
 
                     val title = Utils.capitalizeFirstLetters(book.title)
