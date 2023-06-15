@@ -1,152 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <include
+        android:id="@+id/loading_layout"
+        layout="@layout/upload_progressbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent" />
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            app:layout_constraintBottom_toTopOf="@+id/textInputLayoutAuthor"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/logo"
-            tools:ignore="ContentDescription"
-            tools:srcCompat="@drawable/logo" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutAuthor"
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/global_margin24"
-            android:layout_marginTop="@dimen/global_margin24"
-            app:layout_constraintBottom_toTopOf="@id/textInputLayoutTitle"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView">
+            android:layout_height="wrap_content">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/textInputEditTextAuthor"
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                app:layout_constraintBottom_toTopOf="@+id/textInputLayoutAuthor"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/logo"
+                tools:ignore="ContentDescription"
+                tools:srcCompat="@drawable/logo" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutAuthor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:hint="@string/author" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginHorizontal="@dimen/global_margin24"
+                android:layout_marginTop="@dimen/global_margin24"
+                app:layout_constraintBottom_toTopOf="@id/textInputLayoutTitle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/imageView">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/global_margin24"
-            android:layout_marginTop="@dimen/global_margin24"
-            app:layout_constraintBottom_toTopOf="@id/textViewGenre"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutAuthor">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditTextAuthor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/author" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/textInputEditTextTitle"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:hint="@string/title" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginHorizontal="@dimen/global_margin24"
+                android:layout_marginTop="@dimen/global_margin24"
+                app:layout_constraintBottom_toTopOf="@id/textViewGenre"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutAuthor">
 
-        <TextView
-            android:id="@+id/textViewGenre"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/global_margin24"
-            android:layout_marginTop="@dimen/global_margin24"
-            android:layout_marginEnd="@dimen/global_margin24"
-            android:text="@string/genre"
-            android:textColor="@color/colorPrimary"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toTopOf="@+id/spinner"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutTitle" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditTextTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/title" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <Spinner
-            android:id="@+id/spinner"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/global_margin24"
-            android:layout_marginTop="@dimen/buttonBetween8"
-            android:layout_marginEnd="@dimen/global_margin24"
-            app:layout_constraintBottom_toTopOf="@+id/textInputLayoutDescription"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewGenre" />
+            <TextView
+                android:id="@+id/textViewGenre"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/global_margin24"
+                android:layout_marginTop="@dimen/global_margin24"
+                android:layout_marginEnd="@dimen/global_margin24"
+                android:text="@string/genre"
+                android:textColor="@color/colorPrimary"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toTopOf="@+id/spinner"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutTitle" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutDescription"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/global_margin24"
-            android:layout_marginTop="@dimen/global_margin24"
-            app:layout_constraintBottom_toTopOf="@id/buttonSave"
-            app:layout_constraintEnd_toStartOf="@+id/imageButtonDesc"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/spinner">
+            <Spinner
+                android:id="@+id/spinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/global_margin24"
+                android:layout_marginTop="@dimen/buttonBetween8"
+                android:layout_marginEnd="@dimen/global_margin24"
+                app:layout_constraintBottom_toTopOf="@+id/textInputLayoutDescription"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textViewGenre" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/textInputEditTextDescription"
-                android:layout_width="match_parent"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutDescription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/global_margin24"
+                android:layout_marginTop="@dimen/global_margin24"
+                app:layout_constraintBottom_toTopOf="@id/buttonSave"
+                app:layout_constraintEnd_toStartOf="@+id/imageButtonDesc"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/spinner">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditTextDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/description" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/buttonSave"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/global_margin24"
+                android:layout_marginTop="@dimen/global_margin24"
+                android:layout_marginEnd="@dimen/global_margin24"
+                android:layout_marginBottom="@dimen/margin32"
+                android:text="@string/save"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutDescription" />
+
+            <ImageButton
+                android:id="@+id/imageButton"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
-                android:hint="@string/description" />
-        </com.google.android.material.textfield.TextInputLayout>
+                app:layout_constraintBottom_toBottomOf="@+id/imageView"
+                app:layout_constraintStart_toEndOf="@+id/imageView"
+                app:srcCompat="@drawable/ic_baseline_photo_camera_24"
+                app:tint="@color/colorSecondaryVariant"
+                tools:ignore="ContentDescription" />
 
-        <Button
-            android:id="@+id/buttonSave"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/global_margin24"
-            android:layout_marginTop="@dimen/global_margin24"
-            android:layout_marginEnd="@dimen/global_margin24"
-            android:layout_marginBottom="@dimen/margin32"
-            android:text="@string/save"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textInputLayoutDescription" />
+            <ImageButton
+                android:id="@+id/imageButtonDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/buttonBetween8"
+                android:layout_marginTop="@dimen/global_margin24"
+                android:layout_marginEnd="@dimen/global_margin24"
+                android:layout_marginBottom="@dimen/global_margin24"
+                app:layout_constraintBottom_toTopOf="@+id/buttonSave"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:background="@android:color/transparent"
+                app:layout_constraintStart_toEndOf="@+id/textInputLayoutDescription"
+                app:layout_constraintTop_toBottomOf="@+id/spinner"
+                app:srcCompat="@drawable/ic_baseline_photo_camera_24"
+                tools:ignore="ContentDescription" />
 
-        <ImageButton
-            android:id="@+id/imageButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            app:layout_constraintBottom_toBottomOf="@+id/imageView"
-            app:layout_constraintStart_toEndOf="@+id/imageView"
-            app:srcCompat="@drawable/ic_baseline_photo_camera_24"
-            app:tint="@color/colorSecondaryVariant"
-            tools:ignore="ContentDescription" />
-
-        <ImageButton
-            android:id="@+id/imageButtonDesc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/buttonBetween8"
-            android:layout_marginTop="@dimen/global_margin24"
-            android:layout_marginEnd="@dimen/global_margin24"
-            android:layout_marginBottom="@dimen/global_margin24"
-            app:layout_constraintBottom_toTopOf="@+id/buttonSave"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:background="@android:color/transparent"
-            app:layout_constraintStart_toEndOf="@+id/textInputLayoutDescription"
-            app:layout_constraintTop_toBottomOf="@+id/spinner"
-            app:srcCompat="@drawable/ic_baseline_photo_camera_24"
-            tools:ignore="ContentDescription" />
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>
+</RelativeLayout>

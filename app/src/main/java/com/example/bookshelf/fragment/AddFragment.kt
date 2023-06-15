@@ -37,6 +37,8 @@ class AddFragment : Fragment() {
     lateinit var spinner: Spinner
     lateinit var textInputEditTextDescription: TextInputEditText
     lateinit var buttonSave : Button
+    lateinit var takePhotoButton: ImageButton
+    lateinit var takePhotoDesc: ImageButton
 
 
     private lateinit var auth : FirebaseAuth
@@ -54,6 +56,8 @@ class AddFragment : Fragment() {
     lateinit var imageBitmap : Bitmap
 
     lateinit var viewModel: BoundingBoxViewModel
+
+    lateinit var loadingLayout : View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,8 +80,13 @@ class AddFragment : Fragment() {
         textInputEditTextAuthor = view.findViewById(R.id.textInputEditTextAuthor)
         textInputEditTextTitle = view.findViewById(R.id.textInputEditTextTitle)
         textInputEditTextDescription = view.findViewById(R.id.textInputEditTextDescription)
+        takePhotoButton =  view.findViewById(R.id.imageButton)
+        takePhotoDesc = view.findViewById(R.id.imageButtonDesc)
         buttonSave = view.findViewById(R.id.buttonSave)
         spinner = view.findViewById(R.id.spinner)
+        loadingLayout = view.findViewById(R.id.loading_layout)
+
+        hideLoading()
 
         viewModel.description.observe(viewLifecycleOwner) {
             if (it != null) {
@@ -142,13 +151,11 @@ class AddFragment : Fragment() {
             }
         })
 
-        val takePhotoButton: ImageButton = view.findViewById(R.id.imageButton)
         takePhotoButton.setOnClickListener {
             viewModel.images.value = Images(null, null, CameraRequest.COVER)
             view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_addFragment_to_imageCaptureFragment) }
         }
 
-        val takePhotoDesc: ImageButton = view.findViewById(R.id.imageButtonDesc)
         takePhotoDesc.setOnClickListener {
             viewModel.images.value = Images(null, null, CameraRequest.DESCRIPTION)
             view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_addFragment_to_imageCaptureFragment) }
@@ -160,12 +167,15 @@ class AddFragment : Fragment() {
         }
 
         buttonSave.setOnClickListener {
+            showLoading()
+
             bookGenre = spinner.selectedItem.toString()
 
             if (textInputEditTextTitle.text.toString().isNullOrEmpty() ||
                 textInputEditTextAuthor.text.toString().isNullOrEmpty() ||
                 bookGenre.isNullOrEmpty() ||
                 textInputEditTextDescription.text.toString().isNullOrEmpty()) {
+                hideLoading()
 
                 val message = "One or more fields are empty. Check again, and fill out every field!"
                 AlertDialogFragment().addBookErrorHandling(message,requireContext())
@@ -174,6 +184,8 @@ class AddFragment : Fragment() {
             }
 
             if (coverImageHasChanged && !this::imageBitmap.isInitialized) {
+                hideLoading()
+
                 val message = "Image not found! Take another picture."
                 AlertDialogFragment().addBookErrorHandling(message,requireContext())
 
@@ -203,6 +215,7 @@ class AddFragment : Fragment() {
                 DatabaseManager.uploadBookCoverImage(imageBitmap, imgURL, object: UploadBookCoverImageInterface {
                     override fun onSuccess(imageUrl: String) {
                         book.imageURL = imageUrl
+
                         DatabaseManager.updateBookData(currentUser.email!!, book, object: UpdateBookDataInterface {
                             override fun onSuccess() {
                                 Toast.makeText(requireActivity(), "Upload succeeded!",
@@ -214,6 +227,8 @@ class AddFragment : Fragment() {
                             }
 
                             override fun onError(reason: String?) {
+                                hideLoading()
+
                                 val message = "$reason"
                                 AlertDialogFragment().addBookErrorHandling(message,requireContext())
                             }
@@ -222,6 +237,8 @@ class AddFragment : Fragment() {
                     }
 
                     override fun onError(reason: String?) {
+                        hideLoading()
+
                         val message = "$reason"
                         AlertDialogFragment().addBookErrorHandling(message,requireContext())
                     }
@@ -240,6 +257,8 @@ class AddFragment : Fragment() {
                     }
 
                     override fun onError(reason: String?) {
+                        hideLoading()
+
                         val message = "$reason"
                         AlertDialogFragment().addBookErrorHandling(message,requireContext())
                     }
@@ -253,6 +272,8 @@ class AddFragment : Fragment() {
     }
     override fun onResume() {
         if( !Utils.isNetworkAvailable(requireContext()) ) {
+            hideLoading()
+
             val message = "Something went wrong! Please check your internet connection or try again later!"
             AlertDialogFragment().errorHandling(message, requireContext())
         }
@@ -308,6 +329,31 @@ class AddFragment : Fragment() {
         viewModel.result.value = null
         viewModel.description.value = null
 
+    }
+
+    private fun showLoading() {
+        if (this::loadingLayout.isInitialized) {
+            enableFields(false)
+            loadingLayout.setVisibility(View.VISIBLE)
+        }
+    }
+
+    private fun hideLoading() {
+        if (this::loadingLayout.isInitialized) {
+            enableFields(true)
+            loadingLayout.setVisibility(View.GONE)
+        }
+    }
+
+    private fun enableFields(enable : Boolean) {
+        imageView.isClickable = enable
+        textInputEditTextTitle.isEnabled = enable
+        textInputEditTextAuthor.isEnabled = enable
+        spinner.isEnabled= enable
+        textInputEditTextDescription.isEnabled = enable
+        takePhotoButton.isClickable = enable
+        takePhotoDesc.isClickable = enable
+        buttonSave.isClickable = enable
     }
 
 }
