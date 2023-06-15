@@ -126,7 +126,7 @@ object DatabaseManager {
         val storageRef = Firebase.storage.reference.child("images/$randomString.jpg")
 
         val baos = ByteArrayOutputStream()
-        bookCoverImage.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        bookCoverImage.compress(Bitmap.CompressFormat.JPEG, 50, baos)
         val data = baos.toByteArray()
 
         storageRef.putBytes(data).addOnSuccessListener {
