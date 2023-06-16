@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.compose.ui.geometry.Rect
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.example.bookshelf.R
@@ -130,13 +131,21 @@ class BoundingBoxFragment : Fragment() {
             .addOnSuccessListener { visionText ->
                 if (CAMERA_REQUEST == CameraRequest.DESCRIPTION) {
                     val resultText = visionText.text
+                    val resultTextBlocks : List<TextBlock> = visionText.textBlocks
 
                     if (resultText.isNotEmpty()) {
-                        Log.d("RES", resultText)
+                        val left : Float = resultTextBlocks[0].boundingBox?.left!!.toFloat()
+                        val top : Float = resultTextBlocks[0].boundingBox?.top!!.toFloat()
+                        val right : Float = resultTextBlocks[resultTextBlocks.lastIndex].boundingBox?.right!!.toFloat()
+                        val bottom : Float = resultTextBlocks[resultTextBlocks.lastIndex].boundingBox?.bottom!!.toFloat()
+
+                        val resultTextRect = Rect(left, top, right, bottom)
+
                         description = resultText
                         viewModel.description.value = resultText
 
                         drawBitmap()
+                        drawBoundingBoxDescWithLabel(resultTextRect, "description", COLOR_TITLE)
 
                         swapButton.isEnabled = false
                         checkButton.isEnabled = true
@@ -222,6 +231,25 @@ class BoundingBoxFragment : Fragment() {
                 canvas.drawRect(boundingBox, paintBoundingBox)
                 canvas.drawText(label, boundingBox.left.toFloat(), boundingBox.top.toFloat() - 15, paintLabel)
             }
+        }
+
+    }
+
+    private fun drawBoundingBoxDescWithLabel(rect : Rect, label : String, color : Int) {
+        if(this::canvas.isInitialized) {
+            val paintBoundingBox = Paint()
+
+            paintBoundingBox.color = color
+            paintBoundingBox.style = Paint.Style.STROKE
+            paintBoundingBox.strokeWidth = 20F
+
+            val paintLabel = Paint()
+            paintLabel.color = color
+            paintLabel.textSize = 150F
+
+            // Draw the rectangle around the text recognized
+            canvas.drawRect(rect.left, rect.top, rect.right, rect.bottom, paintBoundingBox)
+            canvas.drawText(label, rect.left, rect.top - 15, paintLabel)
         }
 
     }
