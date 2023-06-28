@@ -29,7 +29,7 @@ class RecommendedBooksRecyclerViewAdapter(displayBooks: MutableList<Book>,
 
         holder.title.text = title
         holder.author.text = author
-        holder.genre.text = displayBooks[position].genre
+        holder.genre.text = displayBooks[position].genre.lowercase()
 
         Glide.with(holder.image.context)
             .load(displayBooks[position].imageURL)
