@@ -11,10 +11,14 @@
 
         <action
             android:id="@+id/action_splashFragment_to_loginFragment"
-            app:destination="@id/loginFragment" />
+            app:destination="@id/loginFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right" />
         <action
             android:id="@+id/action_splashFragment_to_mainFragment"
-            app:destination="@id/mainFragment" />
+            app:destination="@id/mainFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -23,13 +27,48 @@
         tools:layout="@layout/main_screen" >
         <action
             android:id="@+id/action_mainFragment_to_addFragment"
-            app:destination="@id/addFragment" />
-
+            app:destination="@id/addFragment"
+            app:enterAnim="@anim/nav_slide_in_right"
+            app:exitAnim="@anim/nav_slide_out_left"
+            app:popExitAnim="@anim/nav_slide_out_right"
+            app:popEnterAnim="@anim/nav_slide_in_left" />
         <action
             android:id="@+id/action_mainFragment_to_loginFragment"
             app:destination="@+id/loginFragment"
+            app:enterAnim="@anim/nav_slide_out_right"
+            app:exitAnim="@anim/nav_slide_in_left"
+            app:popExitAnim="@anim/nav_slide_in_right"
+            app:popEnterAnim="@anim/nav_slide_out_left"
             app:popUpTo="@+id/loginFragment"
-            app:popUpToInclusive="true"/>
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_mainFragment_to_recommendFragment"
+            app:destination="@id/recommendFragment"
+            app:enterAnim="@anim/nav_slide_in_right"
+            app:exitAnim="@anim/nav_slide_out_left"
+            app:popExitAnim="@anim/nav_slide_out_right"
+            app:popEnterAnim="@anim/nav_slide_in_left" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/recommendFragment"
+        android:name="com.example.bookshelf.fragment.RecommendFragment"
+        tools:layout="@layout/fragment_recommend">
+
+        <action
+            android:id="@+id/action_recommendFragment_to_recommendedBookDetailFragment"
+            app:destination="@id/recommendedBookDetailFragment"
+            app:enterAnim="@anim/nav_slide_in_right"
+            app:exitAnim="@anim/nav_slide_out_left"
+            app:popExitAnim="@anim/nav_slide_out_right"
+            app:popEnterAnim="@anim/nav_slide_in_left" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/recommendedBookDetailFragment"
+        android:name="com.example.bookshelf.fragment.RecommendedBookDetailFragment"
+        tools:layout="@layout/fragment_recommended_book_detail">
     </fragment>
 
     <fragment
@@ -38,13 +77,25 @@
         tools:layout="@layout/login_screen" >
         <action
             android:id="@+id/action_loginFragment_to_mainFragment"
-            app:destination="@id/mainFragment" />
+            app:destination="@id/mainFragment"
+            app:enterAnim="@anim/nav_slide_in_right"
+            app:exitAnim="@anim/nav_slide_out_left"
+            app:popExitAnim="@anim/nav_slide_out_right"
+            app:popEnterAnim="@anim/nav_slide_in_left" />
         <action
             android:id="@+id/action_loginFragment_to_registerFragment"
-            app:destination="@id/registerFragment" />
+            app:destination="@id/registerFragment"
+            app:enterAnim="@anim/nav_slide_in_right"
+            app:exitAnim="@anim/nav_slide_out_left"
+            app:popExitAnim="@anim/nav_slide_out_right"
+            app:popEnterAnim="@anim/nav_slide_in_left" />
         <action
             android:id="@+id/action_loginFragment_to_forgotPasswordFragment"
-            app:destination="@id/forgotPasswordFragment" />
+            app:destination="@id/forgotPasswordFragment"
+            app:enterAnim="@anim/nav_slide_in_right"
+            app:exitAnim="@anim/nav_slide_out_left"
+            app:popExitAnim="@anim/nav_slide_out_right"
+            app:popEnterAnim="@anim/nav_slide_in_left" />
     </fragment>
 
     <fragment
@@ -64,11 +115,19 @@
 
         <action
             android:id="@+id/action_addFragment_to_boundingBoxFragment"
-            app:destination="@id/boundingBoxFragment" />
+            app:destination="@id/boundingBoxFragment"
+            app:enterAnim="@anim/nav_slide_in_right"
+            app:exitAnim="@anim/nav_slide_out_left"
+            app:popExitAnim="@anim/nav_slide_out_right"
+            app:popEnterAnim="@anim/nav_slide_in_left" />
 
         <action
             android:id="@+id/action_addFragment_to_imageCaptureFragment"
-            app:destination="@id/imageCaptureFragment" />
+            app:destination="@id/imageCaptureFragment"
+            app:enterAnim="@anim/nav_slide_in_right"
+            app:exitAnim="@anim/nav_slide_out_left"
+            app:popExitAnim="@anim/nav_slide_out_right"
+            app:popEnterAnim="@anim/nav_slide_in_left" />
     </fragment>
 
     <fragment
@@ -78,7 +137,11 @@
 
         <action
             android:id="@+id/action_boundingBoxFragment_to_addFragment"
-            app:destination="@id/addFragment" />
+            app:destination="@id/addFragment"
+            app:enterAnim="@anim/nav_slide_in_right"
+            app:exitAnim="@anim/nav_slide_out_left"
+            app:popExitAnim="@anim/nav_slide_out_right"
+            app:popEnterAnim="@anim/nav_slide_in_left" />
     </fragment>
 
     <fragment
@@ -88,7 +151,11 @@
 
         <action
             android:id="@+id/action_imageCaptureFragment_to_boundingBoxFragment"
-            app:destination="@id/boundingBoxFragment" />
+            app:destination="@id/boundingBoxFragment"
+            app:enterAnim="@anim/nav_slide_in_right"
+            app:exitAnim="@anim/nav_slide_out_left"
+            app:popExitAnim="@anim/nav_slide_out_right"
+            app:popEnterAnim="@anim/nav_slide_in_left" />
     </fragment>
 
 

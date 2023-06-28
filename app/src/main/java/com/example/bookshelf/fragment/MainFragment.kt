@@ -20,15 +20,12 @@ import com.example.bookshelf.adapter.OnBookItemClickListener
 import com.example.bookshelf.database.DatabaseManager
 import com.example.bookshelf.interfaces.GetBooksInterface
 import com.example.bookshelf.model.Book
-import com.example.bookshelf.recommendation.Recommender
 import com.example.bookshelf.utils.Utils
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -133,16 +130,18 @@ class MainFragment : Fragment(), OnBookItemClickListener {
 
         val buttonRecommend : Button = view.findViewById(R.id.buttonRecommend)
         buttonRecommend.setOnClickListener {
-            Thread {
-                runBlocking {
-                    launch {
-                        Recommender.getRecommendationFor(filterByFavorites())
-                    }
-                }
-//                view.post {
-//                    imageView.setImageBitmap(imageBitmap)
+//            Thread {
+//                runBlocking {
+//                    launch {
+//                        Recommender.getRecommendationFor(filterByFavorites())
+//                    }
 //                }
-            }.start()
+////                view.post {
+////                    imageView.setImageBitmap(imageBitmap)
+////                }
+//            }.start()
+            DatabaseManager.favoritebooks = filterByFavorites()
+            Navigation.findNavController(view).navigate(R.id.action_mainFragment_to_recommendFragment)
         }
 
         return view
