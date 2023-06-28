@@ -17,16 +17,21 @@ import com.example.bookshelf.model.BooksApiResponse
 import com.example.bookshelf.model.RecommendedBook
 import com.google.gson.Gson
 import kotlin.time.Duration.Companion.seconds
+import com.example.bookshelf.BuildConfig
 
 object Recommender {
 
     var openAIClient : OpenAI
 
+    var googleBookApiKey = BuildConfig.GOOGLE_BOOK_API_KEY
+    var openAiToken = BuildConfig.OPEN_AI_TOKEN
+    var openAiOrg = BuildConfig.OPEN_AI_ORG
+
     init {
         openAIClient = OpenAI(
-            token = "sk-<token>",
-            timeout = Timeout(socket = 15.seconds),
-            organization = "org-<org>"
+            token = openAiToken,
+            timeout = Timeout(socket = 30.seconds),
+            organization = openAiOrg
         )
     }
 
@@ -95,7 +100,7 @@ object Recommender {
     private fun createRequestString(genreAndTitlesAndAuthors: String) : String {
         return "Give 10 book suggestions, based on the following books and their genres:  " +
                 "$genreAndTitlesAndAuthors " +
-                "The suggested books should be in JSON format containing the title, author and genre."
+                "The suggested books should be in JSON format: [{\"title\": <book's title>, \"author\": <book's author>, \"genre\": <book's genre>}]"
     }
 
     @OptIn(BetaOpenAI::class)
@@ -103,7 +108,7 @@ object Recommender {
         val chatCompletionRequest = ChatCompletionRequest(
             model = ModelId("gpt-3.5-turbo"),
             n = 1,
-            temperature = 0.2,
+            temperature = 0.15,
             messages = listOf(
                 ChatMessage(
                     role = ChatRole.System,
@@ -156,11 +161,19 @@ object Recommender {
             return null
         }
 
+        Log.d("JSON", response)
+        Log.d("JSON", jsonString)
+
         val gson = Gson()
         return try {
             gson.fromJson(jsonString, Array<RecommendedBook>::class.java)
         } catch (e: Exception) {
             Log.e("ERROR", e.message!!)
+
+            for (trace in e.stackTrace) {
+                Log.e("ERROR", trace.toString())
+            }
+
             null
         }
     }
@@ -171,7 +184,7 @@ object Recommender {
         for (recommendedBook in recommendedBooks) {
             val queryString = createQueryString(recommendedBook)
 
-            val book = getBook(queryString, recommendedBook,"<google_api_key>")
+            val book = getBook(queryString, recommendedBook,googleBookApiKey)
 
             if (book != null) {
                 bookData.add(book)

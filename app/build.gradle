@@ -4,6 +4,18 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
+// get property from local.properties
+def getProps(String propName) {
+    def propsFile = rootProject.file('local.properties')
+    if (propsFile.exists()) {
+        def props = new Properties()
+        props.load(new FileInputStream(propsFile))
+        return props[propName]
+    } else {
+        return ""
+    }
+}
+
 android {
     namespace 'com.example.bookshelf'
     compileSdk 33
@@ -19,6 +31,11 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        // BuildConfig:   Type      Var         Value
+        buildConfigField("String", "GOOGLE_BOOK_API_KEY", getProps('GOOGLE_BOOK_API_KEY'))
+        buildConfigField("String", "OPEN_AI_TOKEN", getProps('OPEN_AI_TOKEN'))
+        buildConfigField("String", "OPEN_AI_ORG", getProps('OPEN_AI_ORG'))
     }
 
     buildTypes {
@@ -35,6 +52,7 @@ android {
         jvmTarget = '1.8'
     }
     buildFeatures.dataBinding = true
+    buildFeatures.buildConfig = true
     buildFeatures {
         compose true
     }
