@@ -11,7 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -24,6 +23,7 @@
                 android:id="@+id/imageView"
                 android:layout_width="200dp"
                 android:layout_height="200dp"
+                android:layout_marginTop="@dimen/global_margin24"
                 app:layout_constraintBottom_toTopOf="@+id/textInputLayoutAuthor"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/global_margin24"
                 android:layout_marginTop="@dimen/global_margin24"
-                app:layout_constraintBottom_toTopOf="@id/textInputLayoutTitle"
+                app:layout_constraintBottom_toTopOf="@+id/textInputLayoutTitle"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/imageView">
@@ -57,7 +57,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/global_margin24"
                 android:layout_marginTop="@dimen/global_margin24"
-                app:layout_constraintBottom_toTopOf="@id/textViewGenre"
+                app:layout_constraintBottom_toTopOf="@+id/textViewGenre"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textInputLayoutAuthor">
@@ -103,7 +103,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/global_margin24"
                 android:layout_marginTop="@dimen/global_margin24"
-                app:layout_constraintBottom_toTopOf="@id/buttonSave"
+                app:layout_constraintBottom_toTopOf="@+id/borrowedCheckBox"
                 app:layout_constraintEnd_toStartOf="@+id/imageButtonDesc"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/spinner">
@@ -114,6 +114,82 @@
                     android:layout_height="wrap_content"
                     android:background="@android:color/transparent"
                     android:hint="@string/description" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <CheckBox
+                android:id="@+id/borrowedCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/global_margin24"
+                android:layout_marginTop="@dimen/global_margin24"
+                app:layout_constraintBottom_toTopOf="@+id/textInputLayoutShelf"
+                app:layout_constraintEnd_toStartOf="@+id/textInputLayoutBorrowed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutDescription">
+
+            </CheckBox>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutBorrowed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/buttonBetween8"
+                android:layout_marginTop="@dimen/global_margin24"
+                android:layout_marginEnd="@dimen/global_margin24"
+                app:layout_constraintBaseline_toBaselineOf="@+id/borrowedCheckBox"
+                app:layout_constraintBottom_toTopOf="@+id/textInputLayoutShelf"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/borrowedCheckBox"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutDescription">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditTextBorrowed"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:enabled="false"
+                    android:hint="@string/borrowed_to" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutShelf"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/global_margin24"
+                android:layout_marginTop="@dimen/global_margin24"
+                app:layout_constraintBottom_toTopOf="@+id/buttonSave"
+                app:layout_constraintEnd_toStartOf="@+id/textInputLayoutRow"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/borrowedCheckBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditTextShelf"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/shelf"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutRow"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/buttonBetween8"
+                android:layout_marginTop="@dimen/global_margin24"
+                android:layout_marginEnd="@dimen/global_margin24"
+                app:layout_constraintBaseline_toBaselineOf="@+id/textInputLayoutShelf"
+                app:layout_constraintBottom_toTopOf="@+id/buttonSave"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/textInputLayoutShelf">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/textInputEditTextRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/row"
+                    android:inputType="number" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
@@ -128,7 +204,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutDescription" />
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutShelf" />
 
             <ImageButton
                 android:id="@+id/imageButton"
@@ -149,9 +225,9 @@
                 android:layout_marginTop="@dimen/global_margin24"
                 android:layout_marginEnd="@dimen/global_margin24"
                 android:layout_marginBottom="@dimen/global_margin24"
-                app:layout_constraintBottom_toTopOf="@+id/buttonSave"
-                app:layout_constraintEnd_toEndOf="parent"
                 android:background="@android:color/transparent"
+                app:layout_constraintBottom_toTopOf="@+id/textInputLayoutBorrowed"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/textInputLayoutDescription"
                 app:layout_constraintTop_toBottomOf="@+id/spinner"
                 app:srcCompat="@drawable/ic_baseline_photo_camera_24"

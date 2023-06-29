@@ -6,7 +6,11 @@ data class Book (
     var author: String,
     var genre: String,
     var description: String,
-    var isFav : Boolean
+    var isFav : Boolean,
+    var isBorrowed : Boolean,
+    var borrowedTo : String?,
+    var shelf : Long?,
+    var row : Long?
 ) {
     fun bookToHashMapOf() : HashMap<String, Any?> {
         return hashMapOf(
@@ -15,7 +19,11 @@ data class Book (
             "author" to this.author,
             "genre" to this.genre,
             "description" to this.description,
-            "isFav" to this.isFav
+            "isFav" to this.isFav,
+            "isBorrowed" to this.isBorrowed,
+            "borrowedTo" to this.borrowedTo,
+            "shelf" to this.shelf,
+            "row" to this.row
         )
     }
 }

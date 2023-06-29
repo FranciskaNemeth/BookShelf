@@ -143,7 +143,11 @@ object DatabaseManager {
             author = map["author"] as String,
             genre = map["genre"] as String,
             description = map["description"] as String,
-            isFav = map["isFav"] as Boolean
+            isFav = map["isFav"] as Boolean,
+            isBorrowed = map["isBorrowed"] as Boolean,
+            borrowedTo = map["borrowedTo"] as String?,
+            shelf = map["shelf"] as Long?,
+            row = map["row"] as Long?
         )
     }
 

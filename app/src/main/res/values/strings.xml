@@ -20,4 +20,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="recommend">Recommend</string>
+    <string name="borrowed_to">Borrowed to</string>
+    <string name="shelf">Shelf</string>
+    <string name="row">Row</string>
 </resources>

@@ -14,6 +14,7 @@
             android:id="@+id/imageView"
             android:layout_width="200dp"
             android:layout_height="200dp"
+            android:layout_marginTop="@dimen/global_margin24"
             app:layout_constraintBottom_toTopOf="@+id/textInputLayoutAuthor"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

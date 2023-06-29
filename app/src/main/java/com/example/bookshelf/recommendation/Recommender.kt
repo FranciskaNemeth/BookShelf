@@ -100,7 +100,7 @@ object Recommender {
     private fun createRequestString(genreAndTitlesAndAuthors: String) : String {
         return "Give 10 book suggestions, based on the following books and their genres:  " +
                 "$genreAndTitlesAndAuthors " +
-                "The suggested books should be in JSON format: [{\"title\": <book's title>, \"author\": <book's author>, \"genre\": <book's genre>}]"
+                "The suggested books should be in JSON format: [{\"title\": <book's title>, \"author\": <book's author>, \"genre\": <book's genre>}, {\"title\": <book's title>, \"author\": <book's author>, \"genre\": <book's genre>}]"
     }
 
     @OptIn(BetaOpenAI::class)
@@ -108,7 +108,7 @@ object Recommender {
         val chatCompletionRequest = ChatCompletionRequest(
             model = ModelId("gpt-3.5-turbo"),
             n = 1,
-            temperature = 0.15,
+            temperature = 0.5,
             messages = listOf(
                 ChatMessage(
                     role = ChatRole.System,
@@ -229,7 +229,7 @@ object Recommender {
 
         val title = volumeInfo.title
         val author = volumeInfo.authors.joinToString(", ")
-        val description = volumeInfo.description
+        var description = volumeInfo.description
         val genre: String
         if (volumeInfo.categories != null) {
             genre = volumeInfo.categories.joinToString(", ")
@@ -247,7 +247,11 @@ object Recommender {
             imageUrl = ""
         }
 
-        return Book(imageUrl, title, author, genre, description, false)
+        if(description.isNullOrEmpty()) {
+            description = ""
+        }
+
+        return Book(imageUrl, title, author, genre, description, false, false, null,null, null)
     }
 
 }

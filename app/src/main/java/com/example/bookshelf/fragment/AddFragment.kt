@@ -39,6 +39,10 @@ class AddFragment : Fragment() {
     lateinit var buttonSave : Button
     lateinit var takePhotoButton: ImageButton
     lateinit var takePhotoDesc: ImageButton
+    lateinit var borrowedCheckBox : CheckBox
+    lateinit var textInputEditTextBorrowed: TextInputEditText
+    lateinit var textInputEditTextShelf: TextInputEditText
+    lateinit var textInputEditTextRow: TextInputEditText
 
 
     private lateinit var auth : FirebaseAuth
@@ -85,6 +89,10 @@ class AddFragment : Fragment() {
         buttonSave = view.findViewById(R.id.buttonSave)
         spinner = view.findViewById(R.id.spinner)
         loadingLayout = view.findViewById(R.id.loading_layout)
+        textInputEditTextBorrowed = view.findViewById(R.id.textInputEditTextBorrowed)
+        borrowedCheckBox = view.findViewById(R.id.borrowedCheckBox)
+        textInputEditTextShelf = view.findViewById(R.id.textInputEditTextShelf)
+        textInputEditTextRow = view.findViewById(R.id.textInputEditTextRow)
 
         hideLoading()
 
@@ -155,9 +163,31 @@ class AddFragment : Fragment() {
                     spinner.post {
                         spinner.setSelection(genres.indexOf(book.genre))
                     }
+
+                    borrowedCheckBox.isChecked = book.isBorrowed
+
+                    if (book.isBorrowed) {
+                        textInputEditTextBorrowed.isEnabled = true
+                        textInputEditTextBorrowed.setText(book.borrowedTo)
+                    }
+                    else {
+                        textInputEditTextBorrowed.isEnabled = false
+                        textInputEditTextBorrowed.text?.clear()
+                    }
+
+                    textInputEditTextShelf.setText(book.shelf.toString())
+                    textInputEditTextRow.setText(book.row.toString())
                 }
             }
         })
+
+        borrowedCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            textInputEditTextBorrowed.isEnabled = isChecked
+
+            if (!isChecked) {
+                textInputEditTextBorrowed.text?.clear()
+            }
+        }
 
         takePhotoButton.setOnClickListener {
             viewModel.images.value = Images(null, null, CameraRequest.COVER)
@@ -182,7 +212,8 @@ class AddFragment : Fragment() {
             if (textInputEditTextTitle.text.toString().isNullOrEmpty() ||
                 textInputEditTextAuthor.text.toString().isNullOrEmpty() ||
                 bookGenre.isNullOrEmpty() ||
-                textInputEditTextDescription.text.toString().isNullOrEmpty()) {
+                textInputEditTextDescription.text.toString().isNullOrEmpty() ||
+                (borrowedCheckBox.isChecked == true && textInputEditTextBorrowed.text.toString().isNullOrEmpty())) {
                 hideLoading()
 
                 val message = "One or more fields are empty. Check again, and fill out every field!"
@@ -207,6 +238,11 @@ class AddFragment : Fragment() {
                 book.genre = bookGenre
                 book.description = textInputEditTextDescription.text.toString()
                 // isFav is not modified here
+                book.isBorrowed = borrowedCheckBox.isChecked
+                book.borrowedTo = textInputEditTextBorrowed.text.toString()
+                book.shelf = textInputEditTextShelf.text.toString().toLong()
+                book.row = textInputEditTextRow.text.toString().toLong()
+
             }
             else {
                  book = Book(
@@ -215,7 +251,11 @@ class AddFragment : Fragment() {
                      textInputEditTextAuthor.text.toString(),
                      bookGenre,
                      textInputEditTextDescription.text.toString(),
-                     false
+                     false,
+                     borrowedCheckBox.isChecked,
+                     textInputEditTextBorrowed.text.toString(),
+                     textInputEditTextShelf.text.toString().toLong(),
+                     textInputEditTextRow.text.toString().toLong()
                 )
             }
 
@@ -362,6 +402,10 @@ class AddFragment : Fragment() {
         takePhotoButton.isClickable = enable
         takePhotoDesc.isClickable = enable
         buttonSave.isClickable = enable
+        borrowedCheckBox.isEnabled = enable
+        textInputEditTextBorrowed.isEnabled = enable
+        textInputEditTextShelf.isEnabled = enable
+        textInputEditTextRow.isEnabled = enable
     }
 
 }

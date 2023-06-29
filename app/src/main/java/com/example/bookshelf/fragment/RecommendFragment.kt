@@ -41,7 +41,6 @@ class RecommendFragment : Fragment(), OnRecommendedBookItemClickListener {
         currentUser = auth.currentUser!!
 
         favBooks = DatabaseManager.favoritebooks
-        hideLoading()
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -67,31 +66,37 @@ class RecommendFragment : Fragment(), OnRecommendedBookItemClickListener {
         itemDecoration.setDrawable(drawable)
         recyclerView.addItemDecoration(itemDecoration)
 
-        showLoading()
-        Thread {
-            runBlocking {
-                launch {
-                    Recommender.getRecommendationFor(favBooks, object : GetRecommendedBooksInterface {
-                        override fun onSuccess(recommendedBooks: List<Book>) {
-                            this@RecommendFragment.recommendedBooks.clear()
-                            this@RecommendFragment.recommendedBooks.addAll(recommendedBooks)
-                            view?.post {
-                                hideLoading()
-                                recyclerView.adapter!!.notifyDataSetChanged()
-                            }
-                        }
 
-                        override fun onError(reason: String?) {
-                            Log.e("ERROR", reason.toString())
-                            view?.post {
-                                hideLoading()
-                                AlertDialogFragment().errorHandling(reason.toString(), requireContext())
+        if (adapter.itemCount == 0 ) {
+            showLoading()
+
+            Thread {
+                runBlocking {
+                    launch {
+                        Recommender.getRecommendationFor(favBooks, object : GetRecommendedBooksInterface {
+                            override fun onSuccess(recommendedBooks: List<Book>) {
+                                this@RecommendFragment.recommendedBooks.clear()
+                                this@RecommendFragment.recommendedBooks.addAll(recommendedBooks)
+                                view?.post {
+                                    hideLoading()
+                                    recyclerView.adapter!!.notifyDataSetChanged()
+                                }
                             }
-                        }
-                    })
+
+                            override fun onError(reason: String?) {
+                                Log.e("ERROR", reason.toString())
+                                view?.post {
+                                    AlertDialogFragment().addBookErrorHandling(reason.toString(), requireContext())
+                                    view.let { it1 ->
+                                        Navigation.findNavController(it1).popBackStack(R.id.mainFragment, false)
+                                    }
+                                }
+                            }
+                        })
+                    }
                 }
-            }
-        }.start()
+            }.start()
+        }
 
         if (adapter.itemCount > 0 ) {
             hideLoading()
