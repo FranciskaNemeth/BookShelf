@@ -89,6 +89,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/global_margin24"
             android:layout_marginVertical="@dimen/global_margin24"
+            android:layout_marginEnd="@dimen/global_margin24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
