@@ -73,7 +73,7 @@ class RecommendFragment : Fragment(), OnRecommendedBookItemClickListener {
             Thread {
                 runBlocking {
                     launch {
-                        Recommender.getRecommendationFor(favBooks, object : GetRecommendedBooksInterface {
+                        Recommender.getRecommendationFor(favBooks, currentUser.uid, object : GetRecommendedBooksInterface {
                             override fun onSuccess(recommendedBooks: List<Book>) {
                                 this@RecommendFragment.recommendedBooks.clear()
                                 this@RecommendFragment.recommendedBooks.addAll(recommendedBooks)

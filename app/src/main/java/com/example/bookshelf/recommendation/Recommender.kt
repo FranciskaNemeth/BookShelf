@@ -35,7 +35,7 @@ object Recommender {
         )
     }
 
-    suspend fun getRecommendationFor(favoriteBooks: List<Book>,
+    suspend fun getRecommendationFor(favoriteBooks: List<Book>, userId : String,
                                             callback: GetRecommendedBooksInterface? = null) {
 
         if (favoriteBooks.isNullOrEmpty()) {
@@ -51,7 +51,7 @@ object Recommender {
 
         val requestString: String = createRequestString(genresAndTitlesAndAuthors)
 
-        val (str, isSuccessful) = sendRequest(requestString)
+        val (str, isSuccessful) = sendRequest(requestString, userId)
         if (!isSuccessful) {
             callback?.onError(str)
             return
@@ -100,15 +100,16 @@ object Recommender {
     private fun createRequestString(genreAndTitlesAndAuthors: String) : String {
         return "Give 10 book suggestions, based on the following books and their genres:  " +
                 "$genreAndTitlesAndAuthors " +
-                "The suggested books should be in JSON format: [{\"title\": <book's title>, \"author\": <book's author>, \"genre\": <book's genre>}, {\"title\": <book's title>, \"author\": <book's author>, \"genre\": <book's genre>}]"
+                "The suggested books should be in JSON format: [{\"title\": <book1 title>, \"author\": <book1 author>, \"genre\": <book1 genre>}, {\"title\": <book2 title>, \"author\": <book2 author>, \"genre\": <book2 genre>}]"
     }
 
     @OptIn(BetaOpenAI::class)
-    private suspend fun sendRequest(requestString: String): Pair<String?, Boolean> {
+    private suspend fun sendRequest(requestString: String, userId: String): Pair<String?, Boolean> {
         val chatCompletionRequest = ChatCompletionRequest(
             model = ModelId("gpt-3.5-turbo"),
             n = 1,
-            temperature = 0.5,
+            temperature = 0.4,
+            user = userId,
             messages = listOf(
                 ChatMessage(
                     role = ChatRole.System,
@@ -227,8 +228,23 @@ object Recommender {
 
         val volumeInfo = bookData.volumeInfo
 
-        val title = volumeInfo.title
-        val author = volumeInfo.authors.joinToString(", ")
+        val title : String
+
+        if (volumeInfo.title != null) {
+            title = volumeInfo.title
+        }
+        else {
+            title = recommendedBook.title
+        }
+
+        val author : String
+        if (volumeInfo.authors != null) {
+            author = volumeInfo.authors.joinToString(", ")
+        }
+        else {
+            author = recommendedBook.author
+        }
+
         var description = volumeInfo.description
         val genre: String
         if (volumeInfo.categories != null) {
