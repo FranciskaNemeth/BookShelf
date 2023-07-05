@@ -19,10 +19,8 @@
     <string name="save">Save</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-
-    <string-array name="Genres">
-        <item>Romance</item>
-        <item>Thriller</item>
-        <item>Fantasy</item>
-    </string-array>
+    <string name="recommend">Recommend</string>
+    <string name="borrowed_to">Borrowed to</string>
+    <string name="shelf">Shelf</string>
+    <string name="row">Row</string>
 </resources>

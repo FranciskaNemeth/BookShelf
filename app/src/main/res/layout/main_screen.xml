@@ -15,7 +15,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:iconifiedByDefault="false"
+        android:queryHint="Search"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/searchview_appearance"
+        android:queryBackground="@android:color/transparent" />
 
     <Button
         android:id="@+id/buttonAll"
@@ -40,6 +45,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/buttonAll" />
 
+    <Button
+        android:id="@+id/buttonRecommend"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/global_margin24"
+        android:layout_marginEnd="@dimen/global_margin24"
+        android:text="@string/recommend"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonFavorites"
+        app:layout_constraintBottom_toTopOf="@id/recyclerView"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="0dp"
@@ -50,7 +67,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonAll"
+        app:layout_constraintTop_toBottomOf="@+id/buttonRecommend"
         />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

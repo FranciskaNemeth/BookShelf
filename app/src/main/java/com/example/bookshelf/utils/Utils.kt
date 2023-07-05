@@ -49,4 +49,20 @@ object Utils {
             .create()
             .show()
     }
+
+    //Capitalize the first letter of the words
+    fun capitalizeFirstLetters(str: String): String {
+        val arr = str.split(" ".toRegex()).dropLastWhile { it.isEmpty() }
+            .toTypedArray() //convert String to StringArray
+        val stringBuilder = StringBuilder()
+        for (w in arr) {
+            if (w.length > 1) {
+                stringBuilder.append(
+                    w.substring(0, 1).uppercase(Locale.US) + w.substring(1)
+                        .lowercase(Locale.US) + " "
+                )
+            }
+        }
+        return stringBuilder.toString().trim { it <= ' ' }
+    }
 }

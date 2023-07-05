@@ -1,58 +1,48 @@
 package com.example.bookshelf.fragment
 
-import android.Manifest
-import android.app.Activity.RESULT_OK
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.test.core.app.ApplicationProvider
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
 import com.bumptech.glide.Glide
 import com.example.bookshelf.R
 import com.example.bookshelf.database.DatabaseManager
 import com.example.bookshelf.interfaces.GetGenreInterface
+import com.example.bookshelf.interfaces.UpdateBookDataInterface
+import com.example.bookshelf.interfaces.UploadBookCoverImageInterface
 import com.example.bookshelf.model.Book
+import com.example.bookshelf.model.CameraRequest
+import com.example.bookshelf.model.Images
 import com.example.bookshelf.utils.Utils
-import com.example.bookshelf.utils.Utils.PERMISSION_REQUEST_CODE
+import com.example.bookshelf.viewmodel.BoundingBoxViewModel
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.Text.TextBlock
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import java.io.ByteArrayOutputStream
 
 
 class AddFragment : Fragment() {
-    val REQUEST_IMAGE_CAPTURE = 1
-    var REQUEST_CAMERA : Int = -1
-
     lateinit var imageView : ImageView
     lateinit var textInputEditTextAuthor : TextInputEditText
     lateinit var textInputEditTextTitle: TextInputEditText
     lateinit var spinner: Spinner
     lateinit var textInputEditTextDescription: TextInputEditText
     lateinit var buttonSave : Button
+    lateinit var takePhotoButton: ImageButton
+    lateinit var takePhotoDesc: ImageButton
+    lateinit var borrowedCheckBox : CheckBox
+    lateinit var textInputEditTextBorrowed: TextInputEditText
+    lateinit var textInputEditTextShelf: TextInputEditText
+    lateinit var textInputEditTextRow: TextInputEditText
 
 
     private lateinit var auth : FirebaseAuth
@@ -63,20 +53,23 @@ class AddFragment : Fragment() {
 
     lateinit var book : Book
 
-    lateinit var dataB : ByteArray
-    lateinit var mountainsRef : StorageReference
-    var baos = ByteArrayOutputStream()
-
-    val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-    private var imageUri: Uri? = null
     val storage = Firebase.storage
     var imgURL : String? = null
+    var coverImageHasChanged: Boolean = false
+
+    lateinit var imageBitmap : Bitmap
+
+    lateinit var viewModel: BoundingBoxViewModel
+
+    lateinit var loadingLayout : View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         auth = Firebase.auth
         currentUser = auth.currentUser!!
+
+        viewModel = ViewModelProvider(requireActivity()).get(BoundingBoxViewModel::class.java)
 
     }
 
@@ -91,8 +84,46 @@ class AddFragment : Fragment() {
         textInputEditTextAuthor = view.findViewById(R.id.textInputEditTextAuthor)
         textInputEditTextTitle = view.findViewById(R.id.textInputEditTextTitle)
         textInputEditTextDescription = view.findViewById(R.id.textInputEditTextDescription)
+        takePhotoButton =  view.findViewById(R.id.imageButton)
+        takePhotoDesc = view.findViewById(R.id.imageButtonDesc)
         buttonSave = view.findViewById(R.id.buttonSave)
         spinner = view.findViewById(R.id.spinner)
+        loadingLayout = view.findViewById(R.id.loading_layout)
+        textInputEditTextBorrowed = view.findViewById(R.id.textInputEditTextBorrowed)
+        borrowedCheckBox = view.findViewById(R.id.borrowedCheckBox)
+        textInputEditTextShelf = view.findViewById(R.id.textInputEditTextShelf)
+        textInputEditTextRow = view.findViewById(R.id.textInputEditTextRow)
+
+        textInputEditTextShelf.text = null
+        textInputEditTextRow.text = null
+
+        hideLoading()
+
+        viewModel.description.observe(viewLifecycleOwner) {
+            if (it != null) {
+                textInputEditTextDescription.setText(it)
+            }
+        }
+
+        viewModel.result.observe(viewLifecycleOwner) {
+            if (it != null) {
+                textInputEditTextTitle.setText(it.title)
+                textInputEditTextAuthor.setText(it.author)
+            }
+        }
+
+        viewModel.images.observe(viewLifecycleOwner) {
+            if (it != null) {
+                if (it.CAMERA_REQUEST == CameraRequest.COVER && it.imageCover != null) {
+                    imageBitmap = it.imageCover!!
+                    coverImageHasChanged = true
+                }
+
+                if (this::imageBitmap.isInitialized) {
+                    imageView.setImageBitmap(imageBitmap)
+                }
+            }
+        }
 
         DatabaseManager.getGenresData(object : GetGenreInterface {
             override fun getGenre(genres: MutableList<String>) {
@@ -105,47 +136,78 @@ class AddFragment : Fragment() {
                 spinner.adapter = spinnerAdapter
 
                 val selectedBook = DatabaseManager.getSelectedBookData()
+
                 if(selectedBook != null ) {
                     book = selectedBook
                     imgURL = book.imageURL
                     val ref = storage.reference.child("images/" + book.imageURL + ".jpg")
                     ref.downloadUrl.addOnSuccessListener { Uri ->
-                        val imageurl = Uri.toString()
-                        Glide.with(requireActivity())
-                            .load(imageurl)
-                            .into(imageView)
+                        val imageUrl = Uri.toString()
+                        Thread {
+                            imageBitmap = Glide.with(requireActivity())
+                                .asBitmap()
+                                .load(imageUrl)
+                                .submit()
+                                .get()
+
+                            view.post {
+                                imageView.setImageBitmap(imageBitmap)
+                            }
+                        }.start()
                     }
-                    textInputEditTextTitle.setText(book.title)
-                    textInputEditTextAuthor.setText(book.author)
+
+                    val title = Utils.capitalizeFirstLetters(book.title)
+                    val author = Utils.capitalizeFirstLetters(book.author)
+
+                    textInputEditTextTitle.setText(title)
+                    textInputEditTextAuthor.setText(author)
                     textInputEditTextDescription.setText(book.description)
 
-                    spinner.post(Runnable {
+                    spinner.post {
                         spinner.setSelection(genres.indexOf(book.genre))
-                    })
+                    }
+
+                    borrowedCheckBox.isChecked = book.isBorrowed
+                    textInputEditTextBorrowed.isEnabled = book.isBorrowed
+
+                    if (book.isBorrowed) {
+
+                        textInputEditTextBorrowed.setText(book.borrowedTo)
+                    }
+                    else {
+                        textInputEditTextBorrowed.text?.clear()
+                    }
+
+                    textInputEditTextShelf.setText(book.shelf?.toString())
+                    textInputEditTextRow.setText(book.row?.toString())
+                }
+                else {
+                    borrowedCheckBox.isChecked = false
+                    textInputEditTextBorrowed.isEnabled = false
+                    textInputEditTextBorrowed.text?.clear()
+                    textInputEditTextShelf.text = null
+                    textInputEditTextRow.text = null
                 }
             }
         })
 
-        val takePhotoButton: ImageButton = view.findViewById(R.id.imageButton)
-        takePhotoButton.setOnClickListener {
-            if (Utils.checkPermission(requireActivity())) {
-                REQUEST_CAMERA = 0
-                dispatchTakePictureIntent()
-            } else {
-                REQUEST_CAMERA = 0
-                Utils.requestPermission(requireActivity())
+        borrowedCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            textInputEditTextBorrowed.isEnabled = isChecked
+
+            if (!isChecked) {
+                textInputEditTextBorrowed.text?.clear()
             }
         }
 
-        val takePhotoDesc: ImageButton = view.findViewById(R.id.imageButtonDesc)
+        takePhotoButton.setOnClickListener {
+            viewModel.images.value = Images(null, null, CameraRequest.COVER)
+            view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_addFragment_to_imageCaptureFragment) }
+        }
+
         takePhotoDesc.setOnClickListener {
-            if (Utils.checkPermission(requireActivity())) {
-                REQUEST_CAMERA = 1
-                dispatchTakePictureIntent()
-            } else {
-                REQUEST_CAMERA = 1
-                Utils.requestPermission(requireActivity())
-            }
+            viewModel.images.value = Images(null, null, CameraRequest.DESCRIPTION)
+            view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_addFragment_to_imageCaptureFragment) }
+
         }
 
         imageView.setOnClickListener {
@@ -153,59 +215,140 @@ class AddFragment : Fragment() {
         }
 
         buttonSave.setOnClickListener {
+            showLoading()
+
             bookGenre = spinner.selectedItem.toString()
 
-            if(!imgURL.isNullOrEmpty()) {
-                if (textInputEditTextTitle.text.toString().isNullOrEmpty() ||
-                    textInputEditTextAuthor.text.toString().isNullOrEmpty() ||
-                    bookGenre.isNullOrEmpty() ||
-                    textInputEditTextDescription.text.toString().isNullOrEmpty()) {
+            if (textInputEditTextTitle.text.toString().isNullOrEmpty() ||
+                textInputEditTextAuthor.text.toString().isNullOrEmpty() ||
+                bookGenre.isNullOrEmpty() ||
+                textInputEditTextDescription.text.toString().isNullOrEmpty() ||
+                (borrowedCheckBox.isChecked == true && textInputEditTextBorrowed.text.toString().isNullOrEmpty())) {
+                hideLoading()
 
-                    val message = "One or more fields are empty. Check again, and fill out every field!"
-                    AlertDialogFragment().addBookErrorHandling(message,requireContext())
-                }
-                else {
-                    val b = Book(
-                        imgURL!!, textInputEditTextTitle.text.toString(),
-                        textInputEditTextAuthor.text.toString(),
-                        bookGenre, textInputEditTextDescription.text.toString(), false
-                    )
+                val message = "One or more fields are empty. Check again, and fill out every field!"
+                AlertDialogFragment().addBookErrorHandling(message,requireContext())
 
-                    DatabaseManager.updateBookData(currentUser.email!!, b)
-
-                    dataB = baos.toByteArray()
-
-                    if (dataB.size > 0) {
-                        val storageRef = storage.reference
-                        mountainsRef = storageRef.child("images/" + imgURL + ".jpg")
-                        val uploadTask = mountainsRef.putBytes(dataB)
-                        uploadTask.addOnFailureListener {
-                            // Handle unsuccessful uploads
-                            Toast.makeText(requireActivity(), "Upload: failed!",
-                                Toast.LENGTH_LONG).show()
-                        }.addOnSuccessListener { taskSnapshot ->
-                            Log.d("UPLOAD", "Succes")
-                            Toast.makeText(requireActivity(), "Upload: succeeded!",
-                                Toast.LENGTH_LONG).show()
-                            requireActivity().onBackPressed()
-                        }
-                    }
-                    else {
-                        requireActivity().onBackPressed()
-                    }
-                }
+                return@setOnClickListener
             }
-            else {
+
+            if (coverImageHasChanged && !this::imageBitmap.isInitialized) {
+                hideLoading()
+
                 val message = "Image not found! Take another picture."
                 AlertDialogFragment().addBookErrorHandling(message,requireContext())
+
+                return@setOnClickListener
             }
+
+            val shelf : Long?
+            val row : Long?
+
+            if(textInputEditTextShelf.text.isNullOrEmpty()) {
+                shelf = null
+            }
+            else {
+                shelf = textInputEditTextShelf.text?.toString()?.toLong()
+            }
+
+            if (textInputEditTextRow.text.isNullOrEmpty()) {
+                row = null
+            }
+            else {
+                row = textInputEditTextRow.text?.toString()?.toLong()
+            }
+
+            // if the book is initialized it means that we are updating
+            if (this::book.isInitialized) {
+                book.title = textInputEditTextTitle.text.toString()
+                book.author = textInputEditTextAuthor.text.toString()
+                book.genre = bookGenre
+                book.description = textInputEditTextDescription.text.toString()
+                // isFav is not modified here
+                book.isBorrowed = borrowedCheckBox.isChecked
+                book.borrowedTo = textInputEditTextBorrowed.text.toString()
+                book.shelf = shelf
+                book.row = row
+
+            }
+            else {
+                book = Book(
+                     "",  // empty string is set for the time being; will update once image is uploaded
+                     textInputEditTextTitle.text.toString(),
+                     textInputEditTextAuthor.text.toString(),
+                     bookGenre,
+                     textInputEditTextDescription.text.toString(),
+                     false,
+                     borrowedCheckBox.isChecked,
+                     textInputEditTextBorrowed.text.toString(),
+                     shelf,
+                     row
+                )
+            }
+
+            if (coverImageHasChanged) {
+                DatabaseManager.uploadBookCoverImage(imageBitmap, imgURL, object: UploadBookCoverImageInterface {
+                    override fun onSuccess(imageUrl: String) {
+                        book.imageURL = imageUrl
+
+                        DatabaseManager.updateBookData(currentUser.email!!, book, object: UpdateBookDataInterface {
+                            override fun onSuccess() {
+                                Toast.makeText(requireActivity(), "Upload succeeded!",
+                                    Toast.LENGTH_LONG).show()
+
+                                view?.let { it1 ->
+                                    Navigation.findNavController(it1).popBackStack(R.id.mainFragment, false)
+                                }
+                            }
+
+                            override fun onError(reason: String?) {
+                                hideLoading()
+
+                                val message = "$reason"
+                                AlertDialogFragment().addBookErrorHandling(message,requireContext())
+                            }
+
+                        })
+                    }
+
+                    override fun onError(reason: String?) {
+                        hideLoading()
+
+                        val message = "$reason"
+                        AlertDialogFragment().addBookErrorHandling(message,requireContext())
+                    }
+
+                })
+            }
+            else {
+                DatabaseManager.updateBookData(currentUser.email!!, book, object: UpdateBookDataInterface {
+                    override fun onSuccess() {
+                        Toast.makeText(requireActivity(), "Upload succeeded!",
+                            Toast.LENGTH_LONG).show()
+
+                        view?.let { it1 ->
+                            Navigation.findNavController(it1).popBackStack(R.id.mainFragment, false)
+                        }
+                    }
+
+                    override fun onError(reason: String?) {
+                        hideLoading()
+
+                        val message = "$reason"
+                        AlertDialogFragment().addBookErrorHandling(message,requireContext())
+                    }
+
+                })
+            }
+
         }
 
         return view
     }
-
-        override fun onResume() {
+    override fun onResume() {
         if( !Utils.isNetworkAvailable(requireContext()) ) {
+            hideLoading()
+
             val message = "Something went wrong! Please check your internet connection or try again later!"
             AlertDialogFragment().errorHandling(message, requireContext())
         }
@@ -213,131 +356,12 @@ class AddFragment : Fragment() {
         super.onResume()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            val imageBitmap = data?.extras?.get("data") as Bitmap
-
-            if (REQUEST_CAMERA == 0) {
-                imageView.setImageBitmap(imageBitmap)
-
-                val storageRef = storage.reference
-                val randomString = Utils.generateRandUUID()
-                mountainsRef = storageRef.child("images/" + randomString + ".jpg")
-
-                imgURL = randomString
-
-                val bitmap = (imageView.drawable as BitmapDrawable).bitmap
-                baos = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-            }
-
-            processImage(imageBitmap)
-        }
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         DatabaseManager.deleteSelectedBookData()
+        clearViewModel()
+
         Log.d("DELETE", "delete selected book")
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            PERMISSION_REQUEST_CODE -> if (grantResults.isNotEmpty() && grantResults[0] === PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(
-                    ApplicationProvider.getApplicationContext<Context>(),
-                    "Permission Granted",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                // main logic
-            } else {
-                Toast.makeText(
-                    ApplicationProvider.getApplicationContext<Context>(),
-                    "Permission Denied",
-                    Toast.LENGTH_SHORT
-                ).show()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA)
-                        != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        Utils.showMessageOKCancel(requireActivity(), "You need to allow access permissions",
-                            DialogInterface.OnClickListener { dialog, which ->
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                    Utils.requestPermission(requireActivity())
-                                }
-                            })
-                    }
-                }
-            }
-        }
-    }
-
-    private fun dispatchTakePictureIntent() {
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        try {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-        } catch (e: ActivityNotFoundException) {
-            // display error state to the user
-            Log.d("ERROR", "Camera not found (activity)")
-
-            Utils.showMessageOKCancel(requireActivity(), "Can't open Camera!",
-                DialogInterface.OnClickListener { dialog, which ->
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        Utils.requestPermission(requireActivity())
-                    }
-                })
-        }
-    }
-
-    fun processImage(image : Bitmap) {
-        val inputImage : InputImage = InputImage.fromBitmap(image, 0)
-
-        val result = recognizer.process(inputImage)
-            .addOnSuccessListener { visionText ->
-                if (REQUEST_CAMERA == 1) {
-                    val resultText = visionText.text
-
-                    if (resultText.isNotEmpty()) {
-                        Log.d("RES", resultText)
-                        textInputEditTextDescription.setText(resultText)
-
-                    }
-                    else {
-                        Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
-                            Toast.LENGTH_LONG).show()
-                    }
-                }
-
-                if (REQUEST_CAMERA == 0) {
-                    val textBlocks : List<TextBlock> = visionText.textBlocks
-
-                    if (textBlocks.isNotEmpty()) {
-                        val sortedTextBlocks = textBlocks.sortedByDescending {
-                            it.boundingBox?.width()?.times(it.boundingBox?.height()!!)
-                        }
-
-                        textInputEditTextTitle.setText(sortedTextBlocks[0].text)
-                        textInputEditTextAuthor.setText(sortedTextBlocks[1].text)
-                    }
-                    else {
-                        Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
-                            Toast.LENGTH_LONG).show()
-                    }
-                }
-
-            }
-            .addOnFailureListener { e ->
-                // Task failed with an exception
-                Log.d("ERROR", e.toString())
-
-                Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
-                    Toast.LENGTH_LONG).show()
-            }
     }
 
     private fun showPicture() {
@@ -349,12 +373,18 @@ class AddFragment : Fragment() {
         if(this::book.isInitialized) {
             val ref = storage.reference.child("images/" + book.imageURL + ".jpg")
             ref.downloadUrl.addOnSuccessListener { Uri ->
-                val imageurl = Uri.toString()
+                val imageUrl = Uri.toString()
                 Glide.with(requireActivity())
-                    .load(imageurl)
+                    .load(imageUrl)
                     .placeholder(R.drawable.logo)
-                    .into(imageView)
+                    .into(img)
             }
+        }
+        else if (this::imageBitmap.isInitialized){
+            Glide.with(requireActivity())
+                .load(imageBitmap)
+                .placeholder(R.drawable.logo)
+                .into(img)
         }
 
         alertAdd.setView(view)
@@ -364,4 +394,45 @@ class AddFragment : Fragment() {
 
         alertAdd.show()
     }
+
+    private fun clearViewModel() {
+        viewModel.images.removeObservers(viewLifecycleOwner)
+        viewModel.result.removeObservers(viewLifecycleOwner)
+        viewModel.description.removeObservers(viewLifecycleOwner)
+
+        viewModel.images.value = null
+        viewModel.result.value = null
+        viewModel.description.value = null
+
+    }
+
+    private fun showLoading() {
+        if (this::loadingLayout.isInitialized) {
+            enableFields(false)
+            loadingLayout.setVisibility(View.VISIBLE)
+        }
+    }
+
+    private fun hideLoading() {
+        if (this::loadingLayout.isInitialized) {
+            enableFields(true)
+            loadingLayout.setVisibility(View.GONE)
+        }
+    }
+
+    private fun enableFields(enable : Boolean) {
+        imageView.isClickable = enable
+        textInputEditTextTitle.isEnabled = enable
+        textInputEditTextAuthor.isEnabled = enable
+        spinner.isEnabled= enable
+        textInputEditTextDescription.isEnabled = enable
+        takePhotoButton.isClickable = enable
+        takePhotoDesc.isClickable = enable
+        buttonSave.isClickable = enable
+        borrowedCheckBox.isEnabled = enable
+        textInputEditTextBorrowed.isEnabled = enable
+        textInputEditTextShelf.isEnabled = enable
+        textInputEditTextRow.isEnabled = enable
+    }
+
 }

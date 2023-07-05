@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/book_view_layout"
+    android:layout_width="match_parent"
+    android:layout_height="180dp"
+    android:paddingTop="@dimen/imgMargin16"
+    android:paddingBottom="@dimen/imgMargin16">
+
+    <TextView
+        android:id="@+id/textViewGenre"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/buttonBetween8"
+        android:layout_marginEnd="48dp"
+        android:text="@string/genre"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/base_avatar"
+        app:layout_constraintTop_toBottomOf="@+id/textViewAuthor" />
+
+    <ImageView
+        android:id="@+id/base_avatar"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="@dimen/imgMargin16"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/textViewTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/logo"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/buttonBetween8"
+        android:layout_marginTop="@dimen/buttonBetween8"
+        android:layout_marginEnd="@dimen/buttonBetween8"
+        android:layout_marginBottom="@dimen/buttonBetween8"
+        android:paddingBottom="@dimen/buttonBetween8"
+        android:text="@string/title"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/colorPrimary"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/textViewAuthor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/base_avatar"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewAuthor"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/buttonBetween8"
+        android:layout_marginEnd="48dp"
+        android:text="@string/author"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/textViewGenre"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/base_avatar"
+        app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,11 +7,10 @@ import android.util.Log
 import android.view.*
 import android.widget.Button
 import androidx.appcompat.widget.SearchView
-import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
-import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -46,6 +45,13 @@ class MainFragment : Fragment(), OnBookItemClickListener {
 
         auth = Firebase.auth
         currentUser = auth.currentUser!!
+
+        activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // in here you can do logic when backPress is clicked
+                activity!!.finish()
+            }
+        })
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -122,6 +128,22 @@ class MainFragment : Fragment(), OnBookItemClickListener {
             Log.d("FILTER", "${favBooks.size}")
         }
 
+        val buttonRecommend : Button = view.findViewById(R.id.buttonRecommend)
+        buttonRecommend.setOnClickListener {
+//            Thread {
+//                runBlocking {
+//                    launch {
+//                        Recommender.getRecommendationFor(filterByFavorites())
+//                    }
+//                }
+////                view.post {
+////                    imageView.setImageBitmap(imageBitmap)
+////                }
+//            }.start()
+            DatabaseManager.favoritebooks = filterByFavorites()
+            Navigation.findNavController(view).navigate(R.id.action_mainFragment_to_recommendFragment)
+        }
+
         return view
     }
 
@@ -139,7 +161,6 @@ class MainFragment : Fragment(), OnBookItemClickListener {
                 val currentUser = auth.currentUser
                 if (currentUser != null) {
                     FirebaseAuth.getInstance().signOut()
-                    //finish()
                     view?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_mainFragment_to_loginFragment) }
                 }
             }
