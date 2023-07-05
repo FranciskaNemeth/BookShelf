@@ -3,7 +3,6 @@ package com.example.bookshelf.fragment
 import android.annotation.SuppressLint
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Button
 import androidx.appcompat.widget.SearchView
@@ -124,8 +123,6 @@ class MainFragment : Fragment(), OnBookItemClickListener {
             filteredbooks.addAll(favBooks)
             favoritebooks = favBooks
             recyclerView.adapter!!.notifyDataSetChanged()
-            Log.d("FILTER", "Button clicked")
-            Log.d("FILTER", "${favBooks.size}")
         }
 
         val buttonRecommend : Button = view.findViewById(R.id.buttonRecommend)
@@ -199,10 +196,8 @@ class MainFragment : Fragment(), OnBookItemClickListener {
     fun filterByFavorites() : MutableList<Book> {
         val favBooks : MutableList<Book> = ArrayList()
         allbooks.forEach {
-            Log.d("FILTER", "${it.title}, ${it.isFav}")
             if (it.isFav) {
                 favBooks.add(it)
-                Log.d("FILTER", it.title)
             }
         }
         return favBooks

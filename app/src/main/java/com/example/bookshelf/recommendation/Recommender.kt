@@ -66,10 +66,6 @@ object Recommender {
 
         val books: List<Book> = getBookDataFor(recommendedBooks.asList())
 
-        for (book in books) {
-            Log.d("Muki", "${book.author} - ${book.title} - ${book.imageURL}")
-        }
-
         callback?.onSuccess(books)
 
     }
@@ -162,9 +158,6 @@ object Recommender {
             return null
         }
 
-        Log.d("JSON", response)
-        Log.d("JSON", jsonString)
-
         val gson = Gson()
         return try {
             gson.fromJson(jsonString, Array<RecommendedBook>::class.java)
@@ -252,7 +245,6 @@ object Recommender {
         }
         else {
             genre = recommendedBook.genre
-            Log.d("Muki", "Category not received for book: ${recommendedBook.title}")
         }
 
         val imageUrl: String
