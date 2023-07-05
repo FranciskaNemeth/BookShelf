@@ -94,6 +94,9 @@ class AddFragment : Fragment() {
         textInputEditTextShelf = view.findViewById(R.id.textInputEditTextShelf)
         textInputEditTextRow = view.findViewById(R.id.textInputEditTextRow)
 
+        textInputEditTextShelf.text = null
+        textInputEditTextRow.text = null
+
         hideLoading()
 
         viewModel.description.observe(viewLifecycleOwner) {
@@ -165,18 +168,25 @@ class AddFragment : Fragment() {
                     }
 
                     borrowedCheckBox.isChecked = book.isBorrowed
+                    textInputEditTextBorrowed.isEnabled = book.isBorrowed
 
                     if (book.isBorrowed) {
-                        textInputEditTextBorrowed.isEnabled = true
+
                         textInputEditTextBorrowed.setText(book.borrowedTo)
                     }
                     else {
-                        textInputEditTextBorrowed.isEnabled = false
                         textInputEditTextBorrowed.text?.clear()
                     }
 
-                    textInputEditTextShelf.setText(book.shelf.toString())
-                    textInputEditTextRow.setText(book.row.toString())
+                    textInputEditTextShelf.setText(book.shelf?.toString())
+                    textInputEditTextRow.setText(book.row?.toString())
+                }
+                else {
+                    borrowedCheckBox.isChecked = false
+                    textInputEditTextBorrowed.isEnabled = false
+                    textInputEditTextBorrowed.text?.clear()
+                    textInputEditTextShelf.text = null
+                    textInputEditTextRow.text = null
                 }
             }
         })
@@ -231,6 +241,23 @@ class AddFragment : Fragment() {
                 return@setOnClickListener
             }
 
+            val shelf : Long?
+            val row : Long?
+
+            if(textInputEditTextShelf.text.isNullOrEmpty()) {
+                shelf = null
+            }
+            else {
+                shelf = textInputEditTextShelf.text?.toString()?.toLong()
+            }
+
+            if (textInputEditTextRow.text.isNullOrEmpty()) {
+                row = null
+            }
+            else {
+                row = textInputEditTextRow.text?.toString()?.toLong()
+            }
+
             // if the book is initialized it means that we are updating
             if (this::book.isInitialized) {
                 book.title = textInputEditTextTitle.text.toString()
@@ -240,12 +267,12 @@ class AddFragment : Fragment() {
                 // isFav is not modified here
                 book.isBorrowed = borrowedCheckBox.isChecked
                 book.borrowedTo = textInputEditTextBorrowed.text.toString()
-                book.shelf = textInputEditTextShelf.text.toString().toLong()
-                book.row = textInputEditTextRow.text.toString().toLong()
+                book.shelf = shelf
+                book.row = row
 
             }
             else {
-                 book = Book(
+                book = Book(
                      "",  // empty string is set for the time being; will update once image is uploaded
                      textInputEditTextTitle.text.toString(),
                      textInputEditTextAuthor.text.toString(),
@@ -254,8 +281,8 @@ class AddFragment : Fragment() {
                      false,
                      borrowedCheckBox.isChecked,
                      textInputEditTextBorrowed.text.toString(),
-                     textInputEditTextShelf.text.toString().toLong(),
-                     textInputEditTextRow.text.toString().toLong()
+                     shelf,
+                     row
                 )
             }
 

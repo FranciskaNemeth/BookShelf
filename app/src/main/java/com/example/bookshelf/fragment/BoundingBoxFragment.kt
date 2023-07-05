@@ -160,7 +160,7 @@ class BoundingBoxFragment : Fragment() {
                 if (CAMERA_REQUEST == CameraRequest.COVER) {
                     val textBlocks : List<TextBlock> = visionText.textBlocks
 
-                    if (textBlocks.isNotEmpty()) {
+                    if (textBlocks.isNotEmpty() && textBlocks.size > 1) {
                         sortedTextBlocks = textBlocks.sortedByDescending {
                             it.boundingBox?.width()?.times(it.lines[0].boundingBox?.height()!!)
                         }
@@ -181,6 +181,8 @@ class BoundingBoxFragment : Fragment() {
                     else {
                         Toast.makeText(requireActivity(), "Could not retrieve text from image. Try again!",
                             Toast.LENGTH_LONG).show()
+
+                        drawBitmap()
 
                         swapButton.isEnabled = false
                         checkButton.isEnabled = false
